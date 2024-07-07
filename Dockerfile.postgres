@@ -1,0 +1,3 @@
+FROM postgres
+MAINTAINER cablo
+COPY ./postgres/create-db.sql /docker-entrypoint-initdb.d/create-db.sql

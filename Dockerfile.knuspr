@@ -1,0 +1,4 @@
+FROM openjdk:21-jdk
+MAINTAINER cablo
+COPY build/libs/knuspr-1.0.jar knuspr.jar
+ENTRYPOINT ["java","-jar","/knuspr.jar"]

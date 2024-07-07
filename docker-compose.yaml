@@ -1,0 +1,27 @@
+services:
+  knuspr-postgres:
+    image: cablo/knuspr-postgres-image
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres
+    restart: always
+    environment:
+      - POSTGRES_DB=cablo
+      - POSTGRES_USER=cablo
+      - POSTGRES_PASSWORD=cablo
+    ports:
+      - 5432:5432
+
+  knuspr-app:
+    image: cablo/knuspr-app-image
+    build:
+      context: .
+      dockerfile: Dockerfile.knuspr
+    environment:
+      DATASOURCES_DEFAULT_URL: jdbc:postgresql://knuspr-postgres:5432/cablo
+      DATASOURCES_DEFAULT_USERNAME: cablo
+      DATASOURCES_DEFAULT_PASSWORD: cablo
+    ports:
+      - 8000:8080
+    depends_on:
+      - knuspr-postgres
