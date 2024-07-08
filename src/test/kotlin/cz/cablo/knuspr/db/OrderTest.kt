@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 @MicronautTest(transactional = false)
 open class OrderTest : ProductOrderServiceAbstractTest() {
@@ -15,7 +16,7 @@ open class OrderTest : ProductOrderServiceAbstractTest() {
     fun createOrderOk() {
         val o = productOrderService.createOrder(
             OrderWithItems(
-                order = Order(id = null, name = "Order 1", paid = true, created = null), items = listOf(
+                order = Order(id = null, name = "New Order", paid = true, created = null), items = listOf(
                     OrderItem(products[2].id!!, 1),
                     OrderItem(products[3].id!!, 2),
                     OrderItem(products[4].id!!, 3),
@@ -39,11 +40,7 @@ open class OrderTest : ProductOrderServiceAbstractTest() {
     @Test
     fun createOrderWithoutItems() {
         val e = assertFailsWith<Exception> {
-            productOrderService.createOrder(
-                OrderWithItems(
-                    order = Order(id = null, name = "Order 1", paid = true, created = null), items = listOf()
-                )
-            )
+            productOrderService.createOrder(OrderWithItems(order = Order(id = null, name = "Order 1", paid = true, created = null), items = listOf()))
         }
         assertEquals(ErrMessages.ORDER_NO_ITEMS, e.message)
     }
@@ -107,6 +104,95 @@ open class OrderTest : ProductOrderServiceAbstractTest() {
             productOrderService.deleteOrderWithItems(orders.first().id!!)
         }
         assertEquals(ErrMessages.ORDER_PAID, e.message)
+    }
+
+    @Test
+    fun updateOrderOk() {
+        val o = productOrderService.updateOrder(
+            OrderWithItems(
+                order = Order(id = orders[3].id, name = "New Order", paid = true, created = null), items = listOf(
+                    OrderItem(products[2].id!!, 1),
+                    OrderItem(products[3].id!!, 2),
+                    OrderItem(products[4].id!!, 3),
+                )
+            )
+        )
+        assertTrue(o.id !== orders[3].id)
+        assertEquals("New Order", o.name)
+        assertEquals(false, o.paid)
+        assertNotNull(o.created)
+        // check items
+        val items = productOrderRepository.findOrderItems(o.id!!)
+        assertEquals(3, items.size)
+        for ((i, pi) in items.withIndex()) {
+            assertEquals(o.id, pi.orderId)
+            assertEquals(products[2 + i].id, pi.productId)
+            assertEquals((i + 1).toLong(), pi.quantity)
+        }
+    }
+
+    @Test
+    fun updateOrderNoId() {
+        val e = assertFailsWith<Exception> {
+            productOrderService.updateOrder(
+                OrderWithItems(
+                    order = Order(id = null, name = "New Order", paid = true, created = null), items = listOf(
+                        OrderItem(products[2].id!!, 1),
+                        OrderItem(products[3].id!!, 2),
+                        OrderItem(products[4].id!!, 3),
+                    )
+                )
+            )
+        }
+        assertEquals(ErrMessages.ORDER_NOT_EXISTS, e.message)
+        assertEquals(orders.size, orderRepository.findAll().size)
+        assertEquals(productOrders.size, productOrderRepository.findAll().size)
+    }
+
+    @Test
+    fun updateOrderNotExists() {
+        val e = assertFailsWith<Exception> {
+            productOrderService.updateOrder(
+                OrderWithItems(
+                    order = Order(id = -1, name = "New Order", paid = true, created = null), items = listOf(
+                        OrderItem(products[2].id!!, 1),
+                        OrderItem(products[3].id!!, 2),
+                        OrderItem(products[4].id!!, 3),
+                    )
+                )
+            )
+        }
+        assertEquals(ErrMessages.ORDER_NOT_EXISTS, e.message)
+        assertEquals(orders.size, orderRepository.findAll().size)
+        assertEquals(productOrders.size, productOrderRepository.findAll().size)
+    }
+
+    @Test
+    fun updateOrderPaid() {
+        val e = assertFailsWith<Exception> {
+            productOrderService.updateOrder(
+                OrderWithItems(
+                    order = Order(id = orders[0].id, name = "New Order", paid = true, created = null), items = listOf(
+                        OrderItem(products[2].id!!, 1),
+                        OrderItem(products[3].id!!, 2),
+                        OrderItem(products[4].id!!, 3),
+                    )
+                )
+            )
+        }
+        assertEquals(ErrMessages.ORDER_PAID, e.message)
+        assertEquals(orders.size, orderRepository.findAll().size)
+        assertEquals(productOrders.size, productOrderRepository.findAll().size)
+    }
+
+    @Test
+    fun updateOrderWithoutItems() {
+        val e = assertFailsWith<Exception> {
+            productOrderService.updateOrder(OrderWithItems(order = Order(id = orders[3].id, name = "New Order", paid = true, created = null), items = listOf()))
+        }
+        assertEquals(ErrMessages.ORDER_NO_ITEMS, e.message)
+        assertEquals(orders.size, orderRepository.findAll().size)
+        assertEquals(productOrders.size, productOrderRepository.findAll().size)
     }
 
 }

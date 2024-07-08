@@ -123,9 +123,13 @@ open class ProductOrderService(
             throw Exception(ErrMessages.ORDER_PAID)
         }
         // delete order items:
-        // TODO return quantity to the valid product by item.product.name
+        // return quantity to the valid product with the same name as current product;
+        // if valid product not found, return quantity to the current product
         val items = productOrderRepository.findOrderItems(orderId)
         for (oi in items) {
+//            val p = productRepository.findById(oi.productId).get()
+            // TODO cablo
+//            productRepository.findValidByName(p.name!!)
             productRepository.updateQuantity(oi.productId, oi.quantity)
         }
         productOrderRepository.deleteOrderItems(orderId)
@@ -133,9 +137,9 @@ open class ProductOrderService(
     }
 
     @Transactional
-    open fun updateOrder(order: Order): Order {
-        // todo
-//        orderRepository.deleteById(orderId)
-        return order
+    open fun updateOrder(orderWithItems: OrderWithItems): Order {
+        val orderId = orderWithItems.order.id ?: throw Exception(ErrMessages.ORDER_NOT_EXISTS)
+        deleteOrderWithItems(orderId)
+        return createOrder(orderWithItems)
     }
 }

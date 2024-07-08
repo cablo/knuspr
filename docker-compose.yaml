@@ -5,6 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile.postgres
     restart: always
+    command: ["postgres", "-c", "log_statement=all"]
     environment:
       - POSTGRES_DB=cablo
       - POSTGRES_USER=cablo

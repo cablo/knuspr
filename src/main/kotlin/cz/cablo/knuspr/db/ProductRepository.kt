@@ -24,6 +24,10 @@ interface ProductRepository : CrudRepository<Product, Long> {
     @Query("SELECT * FROM product WHERE id = :productId AND deleted is null")
     fun findValidById(productId: Long): Product?
 
+    // TODO cablo
+//    @Query("SELECT * FROM product WHERE name = :name AND deleted is null")
+//    fun findValidIdForProduct(productId: Long): Long?
+
     @Query("UPDATE product SET deleted = now() WHERE id = :productId")
     fun softDelete(productId: Long)
 
