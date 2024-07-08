@@ -13,4 +13,12 @@ interface ProductOrderRepository : CrudRepository<ProductOrder, Long> {
 
     @Query("DELETE FROM product_order WHERE order_id = :orderId")
     fun deleteOrderItems(orderId: Long)
+
+    // TODO for test only because lateinit var jdbcOperations: JdbcOperations is not properly initialized in non-transactional tests
+    @Query("""
+        DELETE FROM product_order;
+        DELETE FROM product;
+        DELETE FROM "order";
+        """)
+    fun deleteDatabase()
 }

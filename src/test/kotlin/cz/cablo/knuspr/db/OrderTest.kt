@@ -9,7 +9,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-@MicronautTest
+@MicronautTest(transactional = false)
 open class OrderTest : ProductOrderServiceAbstractTest() {
 
     @Test
@@ -53,10 +53,7 @@ open class OrderTest : ProductOrderServiceAbstractTest() {
 
     @Test
     fun createOrderWithInvalidItems() {
-        // TODO nefunguje
-/*
-        val all1 = orderRepository.findAll()
-        val e = assertFailsWith<RuntimeException> {
+        val e = assertFailsWith<OrderItemException> {
             productOrderService.createOrder(
                 OrderWithItems(
                     order = Order(id = null, name = "Order 1", payed = true, created = null),
@@ -64,22 +61,34 @@ open class OrderTest : ProductOrderServiceAbstractTest() {
                         OrderItem(products[0].id!!, 1), // deleted
                         OrderItem(products[1].id!!, 2), // deleted
                         OrderItem(products[2].id!!, -1), // invalid quantity
-                        OrderItem(-1, 3), // invalid id
+                        OrderItem(products[3].id!!, 1000), // not enough quantity
+                        OrderItem(-1, 10), // invalid id
                     )
                 )
             )
         }
-        val all2 = orderRepository.findAll()
-        assertEquals(orders.size, all2.size)
-*/
+        // no new order and items
+        assertEquals(orders.size, orderRepository.findAll().size)
+        assertEquals(productOrders.size, productOrderRepository.findAll().size)
 
-
-//        val ie = e.itemErrors
-//        assertEquals(4, ie.size)
-//        assertTrue(ie[0].missingProduct!!)
-//        assertTrue(ie[1].missingProduct!!)
-//        assertTrue(ie[2].invalidQuantity!!)
-//        assertTrue(ie[3].missingProduct!!)
+        // check returned error order items
+        val errors = e.itemErrors
+        assertEquals(5, errors.size)
+        assertEquals(true, errors[0].missingProduct)
+        assertEquals(null, errors[0].invalidQuantity)
+        assertEquals(null, errors[0].missingQuantity)
+        assertEquals(true, errors[1].missingProduct)
+        assertEquals(null, errors[1].invalidQuantity)
+        assertEquals(null, errors[1].missingQuantity)
+        assertEquals(null, errors[2].missingProduct)
+        assertEquals(true, errors[2].invalidQuantity)
+        assertEquals(null, errors[2].missingQuantity)
+        assertEquals(null, errors[3].missingProduct)
+        assertEquals(null, errors[3].invalidQuantity)
+        assertEquals(900, errors[3].missingQuantity)
+        assertEquals(true, errors[4].missingProduct)
+        assertEquals(null, errors[4].invalidQuantity)
+        assertEquals(null, errors[4].missingQuantity)
     }
 
     @Test

@@ -97,7 +97,6 @@ open class ProductOrderService(
         }
         // if order item error -> exception
         if (itemErrors.isNotEmpty()) {
-            // TODO nefunguje rollback
             throw OrderItemException(itemErrors)
         }
         return dbOrder

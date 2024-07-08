@@ -1,13 +1,12 @@
 package cz.cablo.knuspr.db
 
-import io.micronaut.data.jdbc.runtime.JdbcOperations
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import org.junit.jupiter.api.BeforeEach
 import java.time.Instant
 import kotlin.test.assertEquals
 
-@MicronautTest
+@MicronautTest(transactional = false)
 open class ProductOrderServiceAbstractTest {
 
     @Inject
@@ -22,23 +21,18 @@ open class ProductOrderServiceAbstractTest {
     @Inject
     lateinit var productOrderRepository: ProductOrderRepository
 
-    @Inject
-    lateinit var jdbcOperations: JdbcOperations
-
     val products = mutableListOf<Product>()
     val orders = mutableListOf<Order>()
     val productOrders = mutableListOf<ProductOrder>()
 
 
     @BeforeEach
-    fun setUp() {
-        jdbcOperations.prepareStatement("delete from product_order;delete from product;delete from \"order\";") { statement ->
-            statement.executeUpdate()
-        }
-        createData()
+    fun beforeEachTest() {
+        createNewData()
     }
 
-    private fun createData() {
+    private fun createNewData() {
+        productOrderRepository.deleteDatabase()
         productOrders.clear()
         products.clear()
         orders.clear()

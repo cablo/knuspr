@@ -60,11 +60,6 @@ dependencies {
     testImplementation("io.micronaut:micronaut-http-client")
     testImplementation("org.jetbrains.kotlin:kotlin-test")
 
-    // for transactional
-    implementation("io.micronaut:micronaut-runtime")
-    implementation("io.micronaut:micronaut-validation:3.10.4")
-    annotationProcessor("io.micronaut.data:micronaut-data-processor")
-
     ksp("io.micronaut.data:micronaut-data-processor")
     ksp("io.micronaut:micronaut-http-validation")
     ksp("io.micronaut.serde:micronaut-serde-processor")
