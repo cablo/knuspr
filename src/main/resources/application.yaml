@@ -1,0 +1,21 @@
+# used for debug against docker container only
+datasources:
+  default:
+    url: jdbc:postgresql://localhost:5432/cablo
+    username: cablo
+    password: cablo
+    driverClassName: org.postgresql.Driver
+    dialect: POSTGRES
+    db-type: postgres
+
+#micronaut:
+#  application:
+#    name: swagger-demo
+#  router:
+#    static-resources:
+#      swagger:
+#        paths: classpath:META-INF/swagger
+#        mapping: /swagger/**
+#      swagger-ui:
+#        paths: classpath:META-INF/swagger/views/swagger-ui
+#        mapping: /swagger-ui/**

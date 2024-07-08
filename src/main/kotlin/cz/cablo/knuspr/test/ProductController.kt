@@ -1,7 +1,7 @@
 package cz.cablo.knuspr.test
 
-import cz.cablo.knuspr.db.DbService
 import cz.cablo.knuspr.db.Product
+import cz.cablo.knuspr.db.ProductOrderService
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
@@ -9,7 +9,16 @@ import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
 
 @Controller("/product")
-class ProductController(private val dbService: DbService) {
+class ProductController(private val dbService: ProductOrderService) {
+
+    @Get("/list")
+    fun create(): HttpResponse<Any> {
+        return try {
+            HttpResponse.created(dbService.findAllValidProducts())
+        } catch (e: Exception) {
+            HttpResponse.badRequest(e.message)
+        }
+    }
 
     @Post("/create")
     fun create(@Body product: Product): HttpResponse<Any> {

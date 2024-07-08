@@ -4,7 +4,7 @@ import io.micronaut.data.annotation.GeneratedValue
 import io.micronaut.data.annotation.Id
 import io.micronaut.data.annotation.MappedEntity
 import io.micronaut.serde.annotation.Serdeable
-import java.time.LocalDateTime
+import java.time.Instant
 
 @Serdeable
 @MappedEntity
@@ -15,5 +15,5 @@ data class Product(
     var name: String,
     var quantity: Long,
     var price: Long,
-    var deleted: LocalDateTime?
+    var deleted: Instant?
 )

@@ -13,7 +13,7 @@ import kotlin.test.assertFailsWith
 open class AbstractDbTest {
 
     @Inject
-    lateinit var dbService: DbService
+    lateinit var productOrderService: ProductOrderService
 
     @Inject
     lateinit var productRepository: ProductRepository
@@ -52,7 +52,7 @@ open class AbstractDbTest {
             orders.add(
                 orderRepository.save(
                     Order(
-                        id = null, name = "Order $i", payed = false, created = null, deleted = null
+                        id = null, name = "Order $i", payed = false, created = null
                     )
                 )
             )
@@ -69,7 +69,7 @@ open class AbstractDbTest {
 
         // fail duplicated
         assertFailsWith<Exception> {
-            dbService.createProduct(
+            productOrderService.createProduct(
                 Product(
                     id = null, name = "Knuspr 1", quantity = 100, price = 1, deleted = null
                 )
@@ -79,7 +79,7 @@ open class AbstractDbTest {
         // delete Knuspr 1 and create again
         productRepository.softDelete(products[0].id!!)
         assertEquals(100, productRepository.findAll().size)
-        dbService.createProduct(
+        productOrderService.createProduct(
             Product(
                 id = null, name = "Knuspr 1", quantity = 100, price = 1, deleted = null
             )

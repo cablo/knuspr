@@ -9,7 +9,6 @@ import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.client.HttpClient
 import io.micronaut.http.client.annotation.Client
-import io.micronaut.runtime.server.EmbeddedServer
 import io.micronaut.serde.ObjectMapper
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
@@ -34,7 +33,7 @@ class Knuspr2Test : AbstractDbTest() {
         val res = client.toBlocking().exchange(
             HttpRequest.POST(
                 "/order/create", OrderWithItems(
-                    order = Order(id = null, name = "Knuspr", payed = false, created = null, deleted = null),
+                    order = Order(id = null, name = "Knuspr", payed = false, created = null),
                     items = listOf(OrderItem(productId = 1, quantity = 12))
                 )
             ), String::class.java

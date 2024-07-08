@@ -9,8 +9,14 @@ import io.micronaut.data.repository.CrudRepository
 @JdbcRepository(dialect = Dialect.POSTGRES)
 interface ProductRepository : CrudRepository<Product, Long> {
 
+    @Query("SELECT * FROM product WHERE deleted is null ORDER BY name")
+    fun findAllValid(): List<Product>
+
     @Query("SELECT EXISTS (SELECT 1 FROM product WHERE name = :name AND deleted is null)")
     fun existsValidWithName(name: String): Boolean
+
+    @Query("SELECT EXISTS (SELECT 1 FROM product WHERE id <> :currentProductId and name = :name AND deleted is null)")
+    fun existsValidWithNameExceptId(name: String, currentProductId: Long): Boolean
 
     @Query("SELECT * FROM product WHERE id = :productId AND deleted is null")
     fun findValidById(productId: Long): Product?

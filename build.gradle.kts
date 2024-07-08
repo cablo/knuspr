@@ -61,7 +61,6 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test")
 
 
-
     ksp("io.micronaut.data:micronaut-data-processor")
     ksp("io.micronaut:micronaut-http-validation")
     ksp("io.micronaut.serde:micronaut-serde-processor")
@@ -75,7 +74,7 @@ dependencies {
     runtimeOnly("ch.qos.logback:logback-classic")
     runtimeOnly("com.fasterxml.jackson.module:jackson-module-kotlin")
     runtimeOnly("org.postgresql:postgresql")
-
+    runtimeOnly("org.yaml:snakeyaml")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.0")
 

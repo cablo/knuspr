@@ -10,6 +10,8 @@ data class ProductOrder(
     // TODO
     @field:Id
     var productId: Long,
+    @field:Id
     var orderId: Long,
+
     var quantity: Long
 )

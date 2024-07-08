@@ -6,16 +6,13 @@ CREATE TABLE public."product"
     "price"    INTEGER NOT NULL,
     "deleted"  TIMESTAMP
 );
--- INSERT INTO public."product" ("name", quantity, price) VALUES('Knuspr', 100, 2);
--- INSERT INTO public."product" ("name", quantity, price) VALUES('Bread', 50, 40);
 
 CREATE TABLE public."order"
 (
     "id"      SERIAL PRIMARY KEY,
     "name"    TEXT    NOT NULL,
     "payed"   BOOLEAN NOT NULL DEFAULT false,
-    "created" TIMESTAMP        DEFAULT NOW(),
-    "deleted" TIMESTAMP
+    "created" TIMESTAMP        DEFAULT NOW()
 );
 
 CREATE TABLE public."product_order"

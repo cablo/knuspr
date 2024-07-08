@@ -4,6 +4,7 @@ import io.micronaut.data.annotation.GeneratedValue
 import io.micronaut.data.annotation.Id
 import io.micronaut.data.annotation.MappedEntity
 import io.micronaut.serde.annotation.Serdeable
+import java.time.Instant
 import java.time.LocalDateTime
 
 @Serdeable
@@ -14,6 +15,5 @@ data class Order(
     var id: Long?,
     var name: String,
     var payed: Boolean,
-    var created: LocalDateTime?,
-    var deleted: LocalDateTime?
+    var created: Instant?
 )
