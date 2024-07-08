@@ -39,7 +39,7 @@ open class ProductTest : ProductOrderServiceAbstractTest() {
         val e = assertFailsWith<Exception> {
             productOrderService.createProduct(Product(id = null, name = products[5].name, quantity = 100, price = 1, deleted = null))
         }
-        assertTrue(e.message!!.contains("already exists"))
+        assertEquals(ErrMessages.PRODUCT_NAME_EXISTS.replace("{}", products[5].name), e.message)
     }
 
     @Test
@@ -52,10 +52,10 @@ open class ProductTest : ProductOrderServiceAbstractTest() {
 
     @Test
     fun deleteProductNotExists() {
-        var e = assertFailsWith<Exception> {
+        val e = assertFailsWith<Exception> {
             productOrderService.deleteProduct(-1)
         }
-        assertTrue(e.message!!.contains("does not exist"))
+        assertEquals(ErrMessages.PRODUCT_NOT_EXISTS, e.message)
     }
 
     @Test
@@ -63,7 +63,7 @@ open class ProductTest : ProductOrderServiceAbstractTest() {
         val e = assertFailsWith<Exception> {
             productOrderService.deleteProduct(products[0].id!!)
         }
-        assertTrue(e.message!!.contains("does not exist"))
+        assertEquals(ErrMessages.PRODUCT_NOT_EXISTS, e.message)
     }
 
     @Test
@@ -82,20 +82,20 @@ open class ProductTest : ProductOrderServiceAbstractTest() {
         var e = assertFailsWith<Exception> {
             productOrderService.updateProduct(Product(id = -1, name = "New Knuspr", quantity = 10, price = 2, deleted = Instant.now()))
         }
-        assertTrue(e.message!!.contains("does not exist"))
+        assertEquals(ErrMessages.PRODUCT_NOT_EXISTS, e.message)
         // already deleted
         e = assertFailsWith<Exception> {
             productOrderService.updateProduct(Product(id = products[0].id, name = "New Knuspr", quantity = 10, price = 2, deleted = Instant.now()))
         }
-        assertTrue(e.message!!.contains("does not exist"))
+        assertEquals(ErrMessages.PRODUCT_NOT_EXISTS, e.message)
     }
 
     @Test
-    fun updateProductPayedOrder() {
+    fun updateProductPaidOrder() {
         val e = assertFailsWith<Exception> {
             productOrderService.updateProduct(Product(id = products[2].id, name = "New Knuspr", quantity = 10, price = 2, deleted = Instant.now()))
         }
-        assertTrue(e.message!!.contains("used by a paid Order"))
+        assertEquals(ErrMessages.PRODUCT_HAS_PAID_ORDER, e.message)
     }
 
     @Test
@@ -104,7 +104,7 @@ open class ProductTest : ProductOrderServiceAbstractTest() {
         val e = assertFailsWith<Exception> {
             productOrderService.updateProduct(Product(id = products[3].id, name = "Knuspr 4", quantity = 10, price = 2, deleted = Instant.now()))
         }
-        assertTrue(e.message!!.contains("already exists"))
+        assertEquals(ErrMessages.PRODUCT_NAME_EXISTS.replace("{}", "Knuspr 4"), e.message)
         // no name changed -> ok
         val p = productOrderService.updateProduct(Product(id = products[3].id, name = "Knuspr 3", quantity = 10, price = 2, deleted = Instant.now()))
         assertEquals(products[3].id, p.id)

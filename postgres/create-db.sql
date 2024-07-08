@@ -11,7 +11,7 @@ CREATE TABLE public."order"
 (
     "id"      SERIAL PRIMARY KEY,
     "name"    TEXT    NOT NULL,
-    "payed"   BOOLEAN NOT NULL DEFAULT false,
+    "paid"    BOOLEAN NOT NULL DEFAULT false,
     "created" TIMESTAMP        DEFAULT NOW()
 );
 

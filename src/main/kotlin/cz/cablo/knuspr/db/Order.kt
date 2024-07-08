@@ -14,6 +14,6 @@ data class Order(
     @field:GeneratedValue(GeneratedValue.Type.AUTO)
     var id: Long?,
     var name: String,
-    var payed: Boolean,
+    var paid: Boolean,
     var created: Instant?
 )

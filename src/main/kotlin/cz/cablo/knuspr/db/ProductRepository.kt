@@ -30,6 +30,6 @@ interface ProductRepository : CrudRepository<Product, Long> {
     @Query("UPDATE product SET quantity = quantity + :quantityDelta WHERE id = :productId")
     fun updateQuantity(productId: Long, quantityDelta: Long)
 
-    @Query("SELECT EXISTS (SELECT 1 FROM product_order po, \"order\" o WHERE po.product_id=:productId and po.order_id = o.id and o.payed=true)")
-    fun payedOrderExists(productId: Long): Boolean
+    @Query("SELECT EXISTS (SELECT 1 FROM product_order po, \"order\" o WHERE po.product_id=:productId and po.order_id = o.id and o.paid=true)")
+    fun paidOrderExists(productId: Long): Boolean
 }

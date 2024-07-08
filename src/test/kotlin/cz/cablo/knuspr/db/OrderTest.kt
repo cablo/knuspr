@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 
 @MicronautTest(transactional = false)
 open class OrderTest : ProductOrderServiceAbstractTest() {
@@ -16,8 +15,7 @@ open class OrderTest : ProductOrderServiceAbstractTest() {
     fun createOrderOk() {
         val o = productOrderService.createOrder(
             OrderWithItems(
-                order = Order(id = null, name = "Order 1", payed = true, created = null),
-                items = listOf(
+                order = Order(id = null, name = "Order 1", paid = true, created = null), items = listOf(
                     OrderItem(products[2].id!!, 1),
                     OrderItem(products[3].id!!, 2),
                     OrderItem(products[4].id!!, 3),
@@ -26,7 +24,7 @@ open class OrderTest : ProductOrderServiceAbstractTest() {
         )
         assertNotNull(o.id)
         assertEquals("Order 1", o.name)
-        assertEquals(false, o.payed)
+        assertEquals(false, o.paid)
         assertNotNull(o.created)
         // check items
         val items = productOrderRepository.findOrderItems(o.id!!)
@@ -43,12 +41,11 @@ open class OrderTest : ProductOrderServiceAbstractTest() {
         val e = assertFailsWith<Exception> {
             productOrderService.createOrder(
                 OrderWithItems(
-                    order = Order(id = null, name = "Order 1", payed = true, created = null),
-                    items = listOf()
+                    order = Order(id = null, name = "Order 1", paid = true, created = null), items = listOf()
                 )
             )
         }
-        assertTrue(e.message!!.contains("No items"))
+        assertEquals(ErrMessages.ORDER_NO_ITEMS, e.message)
     }
 
     @Test
@@ -56,8 +53,7 @@ open class OrderTest : ProductOrderServiceAbstractTest() {
         val e = assertFailsWith<OrderItemException> {
             productOrderService.createOrder(
                 OrderWithItems(
-                    order = Order(id = null, name = "Order 1", payed = true, created = null),
-                    items = listOf(
+                    order = Order(id = null, name = "Order 1", paid = true, created = null), items = listOf(
                         OrderItem(products[0].id!!, 1), // deleted
                         OrderItem(products[1].id!!, 2), // deleted
                         OrderItem(products[2].id!!, -1), // invalid quantity
@@ -67,10 +63,9 @@ open class OrderTest : ProductOrderServiceAbstractTest() {
                 )
             )
         }
-        // no new order and items
+        // check no new order and items
         assertEquals(orders.size, orderRepository.findAll().size)
         assertEquals(productOrders.size, productOrderRepository.findAll().size)
-
         // check returned error order items
         val errors = e.itemErrors
         assertEquals(5, errors.size)
@@ -94,6 +89,8 @@ open class OrderTest : ProductOrderServiceAbstractTest() {
     @Test
     fun deleteOrderOk() {
         productOrderService.deleteOrderWithItems(orders[3].id!!)
+        assertEquals(orders.size - 1, orderRepository.findAll().size)
+        assertEquals(productOrders.size - 1, productOrderRepository.findAll().size)
     }
 
     @Test
@@ -101,14 +98,15 @@ open class OrderTest : ProductOrderServiceAbstractTest() {
         val e = assertFailsWith<Exception> {
             productOrderService.deleteOrderWithItems(-1)
         }
-        assertTrue(e.message!!.contains("order does not exist"))
+        assertEquals(ErrMessages.ORDER_NOT_EXISTS, e.message)
     }
 
     @Test
     fun deleteOrderPaid() {
         val e = assertFailsWith<Exception> {
-            productOrderService.deleteOrderWithItems(orders[1].id!!)
+            productOrderService.deleteOrderWithItems(orders.first().id!!)
         }
-        assertTrue(e.message!!.contains("it has been paid"))
+        assertEquals(ErrMessages.ORDER_PAID, e.message)
     }
+
 }

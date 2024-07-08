@@ -52,7 +52,7 @@ open class AbstractDbTest {
             orders.add(
                 orderRepository.save(
                     Order(
-                        id = null, name = "Order $i", payed = false, created = null
+                        id = null, name = "Order $i", paid = false, created = null
                     )
                 )
             )

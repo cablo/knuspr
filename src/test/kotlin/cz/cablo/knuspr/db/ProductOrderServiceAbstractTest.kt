@@ -41,7 +41,7 @@ open class ProductOrderServiceAbstractTest {
         }
         for (i in 0..4) {
             orders.add(
-                orderRepository.save(Order(id = null, name = "Order $i", payed = (i <= 2), created = null))
+                orderRepository.save(Order(id = null, name = "Order $i", paid = (i <= 2), created = null))
             )
         }
         for (i in 0..4) {

@@ -6,6 +6,16 @@ import io.micronaut.transaction.annotation.Transactional
 import jakarta.inject.Singleton
 import java.time.Instant
 
+object ErrMessages {
+    const val ORDER_PAID = "The order can not be deleted because it has been paid"
+    const val ORDER_NOT_EXISTS = "The order does not exist"
+    const val ORDER_NO_ITEMS = "No items in order"
+
+    const val PRODUCT_HAS_PAID_ORDER = "Product can not be updated, it is used by a paid Order"
+    const val PRODUCT_NOT_EXISTS = "The product does not exist or has already been deleted"
+    const val PRODUCT_NAME_EXISTS = "Valid product with name '{}' already exists"
+}
+
 @Singleton
 open class ProductOrderService(
     private val productRepository: ProductRepository, private val orderRepository: OrderRepository, private val productOrderRepository: ProductOrderRepository
@@ -23,7 +33,7 @@ open class ProductOrderService(
     open fun createProduct(product: Product): Product {
         // if exists valid Product with the same name -> error
         if (productRepository.existsValidWithName(product.name)) {
-            throw Exception("Valid Product with name ${product.name} already exists")
+            throw Exception(ErrMessages.PRODUCT_NAME_EXISTS.replace("{}", product.name))
         }
         product.deleted = null
         return productRepository.save(product)
@@ -32,7 +42,7 @@ open class ProductOrderService(
     open fun deleteProduct(productId: Long): Product {
         val p = productRepository.findValidById(productId)
         if (p == null) {
-            throw Exception("The product does not exist or has already been deleted")
+            throw Exception(ErrMessages.PRODUCT_NOT_EXISTS)
         }
         productRepository.softDelete(productId)
         return p
@@ -43,15 +53,15 @@ open class ProductOrderService(
         // check existence
         val dbProduct = productRepository.findValidById(product.id!!)
         if (dbProduct == null) {
-            throw Exception("The product does not exist or has already been deleted")
+            throw Exception(ErrMessages.PRODUCT_NOT_EXISTS)
         }
         // check Product is not used by paid Order
-        if (productRepository.payedOrderExists(dbProduct.id!!)) {
-            throw Exception("Product can not be updated, it is used by a paid Order")
+        if (productRepository.paidOrderExists(dbProduct.id!!)) {
+            throw Exception(ErrMessages.PRODUCT_HAS_PAID_ORDER)
         }
         // check there is no valid Product with the new name
         if (productRepository.existsValidWithNameExceptId(product.name, dbProduct.id!!)) {
-            throw Exception("Valid Product with name '${product.name}' already exists")
+            throw Exception(ErrMessages.PRODUCT_NAME_EXISTS.replace("{}", product.name))
         }
         // update properties except id and deleted
         dbProduct.name = product.name
@@ -65,11 +75,11 @@ open class ProductOrderService(
     open fun createOrder(orderWithItems: OrderWithItems): Order {
         // check empty items
         if (orderWithItems.items.isEmpty()) {
-            throw Exception("No items in order")
+            throw Exception(ErrMessages.ORDER_NO_ITEMS)
         }
         // save order row
         val order = orderWithItems.order
-        order.payed = false
+        order.paid = false
         order.created = Instant.now()
         val dbOrder = orderRepository.save(order)
         // save all order items
@@ -106,11 +116,17 @@ open class ProductOrderService(
     open fun deleteOrderWithItems(orderId: Long) {
         val o = orderRepository.findById(orderId)
         if (o.isEmpty) {
-            throw Exception("The order does not exist")
+            throw Exception(ErrMessages.ORDER_NOT_EXISTS)
         }
         // check paid
-        if (o.get().payed) {
-            throw Exception("The order can not be deleted because it has been paid")
+        if (o.get().paid) {
+            throw Exception(ErrMessages.ORDER_PAID)
+        }
+        // delete order items:
+        // TODO return quantity to the valid product by item.product.name
+        val items = productOrderRepository.findOrderItems(orderId)
+        for (oi in items) {
+            productRepository.updateQuantity(oi.productId, oi.quantity)
         }
         productOrderRepository.deleteOrderItems(orderId)
         orderRepository.deleteById(orderId)
