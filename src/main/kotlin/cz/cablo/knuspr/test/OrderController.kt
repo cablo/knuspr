@@ -1,31 +1,24 @@
 package cz.cablo.knuspr.test
 
 import cz.cablo.knuspr.bean.OrderWithItems
-import cz.cablo.knuspr.db.*
+import cz.cablo.knuspr.db.OrderItemException
+import cz.cablo.knuspr.db.ProductOrderService
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Post
 
 @Controller("/order")
-class OrderController(
-    private val productRepository: ProductRepository,
-    private val orderRepository: OrderRepository,
-    private val productOrderRepository: ProductOrderRepository
-) {
+class OrderController(private val productOrderService: ProductOrderService) {
 
     @Post("/create")
     fun create(@Body orderWithItems: OrderWithItems): HttpResponse<Any> {
-        val p = productRepository.save(Product(id = orderWithItems.items[0].productId, name = "Knuspr", quantity = 100, price = 2, deleted = null))
-        val o = orderRepository.save(orderWithItems.order)
-        val po = ProductOrder(p.id!!, o.id!!, 13)
-        productOrderRepository.save(po)
-        return HttpResponse.created(o)
-
-//        return try {
-//            HttpResponse.created(orderRepository.save(order))
-//        } catch (e: Exception) {
-//            HttpResponse.serverError(e.message)
-//        }
+        return try {
+            HttpResponse.created(productOrderService.createOrder(orderWithItems))
+        } catch (oie: OrderItemException) {
+            HttpResponse.badRequest(oie.itemErrors)
+        } catch (e: Exception) {
+            HttpResponse.badRequest(e.message)
+        }
     }
 }

@@ -1,5 +1,6 @@
 package cz.cablo.knuspr.db
 
+import cz.cablo.knuspr.bean.OrderItemError
 import cz.cablo.knuspr.bean.OrderWithItems
 import io.micronaut.transaction.annotation.Transactional
 import jakarta.inject.Singleton
@@ -7,12 +8,13 @@ import java.time.Instant
 
 @Singleton
 open class ProductOrderService(
-    private val productRepository: ProductRepository,
-    private val orderRepository: OrderRepository,
-    private val productOrderRepository: ProductOrderRepository
+    private val productRepository: ProductRepository, private val orderRepository: OrderRepository, private val productOrderRepository: ProductOrderRepository
 ) {
 
-    @Transactional
+    open fun findAllProducts(): List<Product> {
+        return productRepository.findAllOrdered()
+    }
+
     open fun findAllValidProducts(): List<Product> {
         return productRepository.findAllValid()
     }
@@ -58,17 +60,45 @@ open class ProductOrderService(
         return productRepository.update(dbProduct)
     }
 
+    // TODO isolation level
     @Transactional
     open fun createOrder(orderWithItems: OrderWithItems): Order {
+        // check empty items
+        if (orderWithItems.items.isEmpty()) {
+            throw Exception("No items in order")
+        }
         // save order row
         val order = orderWithItems.order
         order.payed = false
         order.created = Instant.now()
         val dbOrder = orderRepository.save(order)
         // save all order items
-        // TODO odebrat quantity z produktu
+        val itemErrors: MutableList<OrderItemError> = mutableListOf()
         for (oi in orderWithItems.items) {
+            // check quantity > 0
+            if (oi.quantity <= 0) {
+                itemErrors.add(OrderItemError(productId = oi.productId, missingProduct = null, invalidQuantity = true, missingQuantity = null))
+                continue
+            }
+            // check valid product
+            val product = productRepository.findValidById(oi.productId)
+            if (product == null) {
+                itemErrors.add(OrderItemError(productId = oi.productId, missingProduct = true, invalidQuantity = null, missingQuantity = null))
+                continue
+            }
+            // check quantity
+            val missingQuantity = oi.quantity - product.quantity
+            if (missingQuantity > 0) {
+                itemErrors.add(OrderItemError(productId = oi.productId, missingProduct = null, invalidQuantity = null, missingQuantity = missingQuantity))
+                continue
+            }
+            productRepository.updateQuantity(product.id!!, -(oi.quantity))
             productOrderRepository.save(ProductOrder(productId = oi.productId, orderId = dbOrder.id!!, quantity = oi.quantity))
+        }
+        // if order item error -> exception
+        if (itemErrors.isNotEmpty()) {
+            // TODO nefunguje rollback
+            throw OrderItemException(itemErrors)
         }
         return dbOrder
     }

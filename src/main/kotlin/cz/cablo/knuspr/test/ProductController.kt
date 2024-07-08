@@ -9,21 +9,12 @@ import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
 
 @Controller("/product")
-class ProductController(private val dbService: ProductOrderService) {
-
-    @Get("/list")
-    fun create(): HttpResponse<Any> {
-        return try {
-            HttpResponse.created(dbService.findAllValidProducts())
-        } catch (e: Exception) {
-            HttpResponse.badRequest(e.message)
-        }
-    }
+class ProductController(private val productOrderService: ProductOrderService) {
 
     @Post("/create")
     fun create(@Body product: Product): HttpResponse<Any> {
         return try {
-            HttpResponse.created(dbService.createProduct(product))
+            HttpResponse.created(productOrderService.createProduct(product))
         } catch (e: Exception) {
             HttpResponse.badRequest(e.message)
         }
@@ -32,7 +23,7 @@ class ProductController(private val dbService: ProductOrderService) {
     @Get("/delete/{productId}")
     fun delete(productId: Long): HttpResponse<Any> {
         return try {
-            HttpResponse.ok(dbService.deleteProduct(productId))
+            HttpResponse.ok(productOrderService.deleteProduct(productId))
         } catch (e: Exception) {
             HttpResponse.badRequest(e.message)
         }
@@ -41,7 +32,7 @@ class ProductController(private val dbService: ProductOrderService) {
     @Post("/update")
     fun update(@Body product: Product): HttpResponse<Any> {
         return try {
-            HttpResponse.ok(dbService.updateProduct(product))
+            HttpResponse.ok(productOrderService.updateProduct(product))
         } catch (e: Exception) {
             HttpResponse.badRequest(e.message)
         }

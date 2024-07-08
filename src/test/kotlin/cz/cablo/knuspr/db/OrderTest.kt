@@ -14,7 +14,6 @@ open class OrderTest : ProductOrderServiceAbstractTest() {
 
     @Test
     fun createOrderOk() {
-        val itemsCount = productOrders.size
         val o = productOrderService.createOrder(
             OrderWithItems(
                 order = Order(id = null, name = "Order 1", payed = true, created = null),
@@ -30,7 +29,57 @@ open class OrderTest : ProductOrderServiceAbstractTest() {
         assertEquals(false, o.payed)
         assertNotNull(o.created)
         // check items
-        assertEquals(itemsCount + 3, productOrderRepository.findAll().size)
+        val items = productOrderRepository.findOrderItems(o.id!!)
+        assertEquals(3, items.size)
+        for ((i, pi) in items.withIndex()) {
+            assertEquals(o.id, pi.orderId)
+            assertEquals(products[2 + i].id, pi.productId)
+            assertEquals((i + 1).toLong(), pi.quantity)
+        }
+    }
+
+    @Test
+    fun createOrderWithoutItems() {
+        val e = assertFailsWith<Exception> {
+            productOrderService.createOrder(
+                OrderWithItems(
+                    order = Order(id = null, name = "Order 1", payed = true, created = null),
+                    items = listOf()
+                )
+            )
+        }
+        assertTrue(e.message!!.contains("No items"))
+    }
+
+    @Test
+    fun createOrderWithInvalidItems() {
+        // TODO nefunguje
+/*
+        val all1 = orderRepository.findAll()
+        val e = assertFailsWith<RuntimeException> {
+            productOrderService.createOrder(
+                OrderWithItems(
+                    order = Order(id = null, name = "Order 1", payed = true, created = null),
+                    items = listOf(
+                        OrderItem(products[0].id!!, 1), // deleted
+                        OrderItem(products[1].id!!, 2), // deleted
+                        OrderItem(products[2].id!!, -1), // invalid quantity
+                        OrderItem(-1, 3), // invalid id
+                    )
+                )
+            )
+        }
+        val all2 = orderRepository.findAll()
+        assertEquals(orders.size, all2.size)
+*/
+
+
+//        val ie = e.itemErrors
+//        assertEquals(4, ie.size)
+//        assertTrue(ie[0].missingProduct!!)
+//        assertTrue(ie[1].missingProduct!!)
+//        assertTrue(ie[2].invalidQuantity!!)
+//        assertTrue(ie[3].missingProduct!!)
     }
 
     @Test

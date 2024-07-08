@@ -9,9 +9,17 @@ import kotlin.test.*
 open class ProductTest : ProductOrderServiceAbstractTest() {
 
     @Test
+    fun listAllProducts() {
+        val ps = productOrderService.findAllProducts()
+        assertEquals(products.size, ps.size)
+        assertEquals(products.first().name, ps.first().name)
+        assertEquals(products.last().name, ps.last().name)
+    }
+
+    @Test
     fun listValidProducts() {
         val ps = productOrderService.findAllValidProducts()
-        assertEquals(ps.size, products.size - 2)
+        assertEquals(products.size - 2, ps.size)
         assertEquals("Knuspr 2", ps.first().name)
         assertEquals(products.last().name, ps.last().name)
     }

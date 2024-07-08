@@ -9,6 +9,9 @@ import io.micronaut.data.repository.CrudRepository
 @JdbcRepository(dialect = Dialect.POSTGRES)
 interface ProductRepository : CrudRepository<Product, Long> {
 
+    @Query("SELECT * FROM product ORDER BY name")
+    fun findAllOrdered(): List<Product>
+
     @Query("SELECT * FROM product WHERE deleted is null ORDER BY name")
     fun findAllValid(): List<Product>
 
@@ -23,6 +26,9 @@ interface ProductRepository : CrudRepository<Product, Long> {
 
     @Query("UPDATE product SET deleted = now() WHERE id = :productId")
     fun softDelete(productId: Long)
+
+    @Query("UPDATE product SET quantity = quantity + :quantityDelta WHERE id = :productId")
+    fun updateQuantity(productId: Long, quantityDelta: Long)
 
     @Query("SELECT EXISTS (SELECT 1 FROM product_order po, \"order\" o WHERE po.product_id=:productId and po.order_id = o.id and o.payed=true)")
     fun payedOrderExists(productId: Long): Boolean
