@@ -114,6 +114,7 @@ open class ProductOrderService(
 
     @Transactional
     open fun deleteOrderWithItems(orderId: Long) {
+        // check order existence
         val o = orderRepository.findById(orderId)
         if (o.isEmpty) {
             throw Exception(ErrMessages.ORDER_NOT_EXISTS)
@@ -122,16 +123,20 @@ open class ProductOrderService(
         if (o.get().paid) {
             throw Exception(ErrMessages.ORDER_PAID)
         }
-        // delete order items:
-        // return quantity to the valid product with the same name as current product;
-        // if valid product not found, return quantity to the current product
+        // return items quantities to products:
+        // each product item must return its quantity to the product, but referenced product can be deleted, so:
+        // a) Try to find valid product by name and if founded -> return quantity to it; else
+        // b) Return quantity to the referenced product
         val items = productOrderRepository.findOrderItems(orderId)
         for (oi in items) {
-//            val p = productRepository.findById(oi.productId).get()
-            // TODO cablo
-//            productRepository.findValidByName(p.name!!)
-            productRepository.updateQuantity(oi.productId, oi.quantity)
+            // try to find valid product; else use current product
+            var targetProductId = productRepository.findValidProductIdForProduct(oi.productId)
+            if (targetProductId == null) {
+                targetProductId = oi.productId
+            }
+            productRepository.updateQuantity(targetProductId, oi.quantity)
         }
+        // hard delete items and order
         productOrderRepository.deleteOrderItems(orderId)
         orderRepository.deleteById(orderId)
     }
