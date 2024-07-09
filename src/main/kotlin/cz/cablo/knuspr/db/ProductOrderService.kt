@@ -1,10 +1,8 @@
 package cz.cablo.knuspr.db
 
-import cz.cablo.knuspr.bean.OrderItemError
 import cz.cablo.knuspr.bean.OrderWithItems
 import io.micronaut.transaction.annotation.Transactional
 import jakarta.inject.Singleton
-import java.time.Instant
 
 object ErrMessages {
     const val ORDER_PAID = "The order can not be deleted because it has been paid"
@@ -18,15 +16,20 @@ object ErrMessages {
 
 @Singleton
 open class ProductOrderService(
-    private val productRepository: ProductRepository, private val orderRepository: OrderRepository, private val productOrderRepository: ProductOrderRepository
+    private val productRepository: ProductRepository, private val orderRepository: OrderRepository, private val productOrderRepository: ProductOrderRepository,
+    private val internalService: InternalService
 ) {
 
+    @Transactional
     open fun findAllProducts(): List<Product> {
+        internalService.deleteExpiredOrdersInternal(this)
         return productRepository.findAllOrdered()
     }
 
+    @Transactional
     open fun findAllValidProducts(): List<Product> {
-        return productRepository.findAllValid()
+        internalService.deleteExpiredOrdersInternal(this)
+        return productRepository.findAllValidOrdered()
     }
 
     @Transactional
@@ -40,10 +43,7 @@ open class ProductOrderService(
     }
 
     open fun deleteProduct(productId: Long): Product {
-        val p = productRepository.findValidById(productId)
-        if (p == null) {
-            throw Exception(ErrMessages.PRODUCT_NOT_EXISTS)
-        }
+        val p = productRepository.findValidById(productId) ?: throw Exception(ErrMessages.PRODUCT_NOT_EXISTS)
         productRepository.softDelete(productId)
         return p
     }
@@ -51,12 +51,9 @@ open class ProductOrderService(
     @Transactional
     open fun updateProduct(product: Product): Product {
         // check existence
-        val dbProduct = productRepository.findValidById(product.id!!)
-        if (dbProduct == null) {
-            throw Exception(ErrMessages.PRODUCT_NOT_EXISTS)
-        }
+        val dbProduct = productRepository.findValidById(product.id!!) ?: throw Exception(ErrMessages.PRODUCT_NOT_EXISTS)
         // check Product is not used by paid Order
-        if (productRepository.paidOrderExists(dbProduct.id!!)) {
+        if (productRepository.existsPaidOrder(dbProduct.id!!)) {
             throw Exception(ErrMessages.PRODUCT_HAS_PAID_ORDER)
         }
         // check there is no valid Product with the new name
@@ -70,81 +67,22 @@ open class ProductOrderService(
         return productRepository.update(dbProduct)
     }
 
-    // TODO isolation level
     @Transactional
     open fun createOrder(orderWithItems: OrderWithItems): Order {
-        // check empty items
-        if (orderWithItems.items.isEmpty()) {
-            throw Exception(ErrMessages.ORDER_NO_ITEMS)
-        }
-        // save order row
-        val order = orderWithItems.order
-        order.paid = false
-        order.created = Instant.now()
-        val dbOrder = orderRepository.save(order)
-        // save all order items
-        val itemErrors: MutableList<OrderItemError> = mutableListOf()
-        for (oi in orderWithItems.items) {
-            // check quantity > 0
-            if (oi.quantity <= 0) {
-                itemErrors.add(OrderItemError(productId = oi.productId, missingProduct = null, invalidQuantity = true, missingQuantity = null))
-                continue
-            }
-            // check valid product
-            val product = productRepository.findValidById(oi.productId)
-            if (product == null) {
-                itemErrors.add(OrderItemError(productId = oi.productId, missingProduct = true, invalidQuantity = null, missingQuantity = null))
-                continue
-            }
-            // check quantity
-            val missingQuantity = oi.quantity - product.quantity
-            if (missingQuantity > 0) {
-                itemErrors.add(OrderItemError(productId = oi.productId, missingProduct = null, invalidQuantity = null, missingQuantity = missingQuantity))
-                continue
-            }
-            productRepository.updateQuantity(product.id!!, -(oi.quantity))
-            productOrderRepository.save(ProductOrder(productId = oi.productId, orderId = dbOrder.id!!, quantity = oi.quantity))
-        }
-        // if order item error -> exception
-        if (itemErrors.isNotEmpty()) {
-            throw OrderItemException(itemErrors)
-        }
-        return dbOrder
+        internalService.deleteExpiredOrdersInternal(this)
+        return internalService.createOrderInternal(orderWithItems)
     }
 
     @Transactional
-    open fun deleteOrderWithItems(orderId: Long) {
-        // check order existence
-        val o = orderRepository.findById(orderId)
-        if (o.isEmpty) {
-            throw Exception(ErrMessages.ORDER_NOT_EXISTS)
-        }
-        // check paid
-        if (o.get().paid) {
-            throw Exception(ErrMessages.ORDER_PAID)
-        }
-        // return items quantities to products:
-        // each product item must return its quantity to the product, but referenced product can be deleted, so:
-        // a) Try to find valid product by name and if founded -> return quantity to it; else
-        // b) Return quantity to the referenced product
-        val items = productOrderRepository.findOrderItems(orderId)
-        for (oi in items) {
-            // try to find valid product; else use current product
-            var targetProductId = productRepository.findValidProductIdForProduct(oi.productId)
-            if (targetProductId == null) {
-                targetProductId = oi.productId
-            }
-            productRepository.updateQuantity(targetProductId, oi.quantity)
-        }
-        // hard delete items and order
-        productOrderRepository.deleteOrderItems(orderId)
-        orderRepository.deleteById(orderId)
+    open fun deleteOrder(orderId: Long) {
+        return internalService.deleteOrderInternal(orderId)
     }
 
     @Transactional
     open fun updateOrder(orderWithItems: OrderWithItems): Order {
         val orderId = orderWithItems.order.id ?: throw Exception(ErrMessages.ORDER_NOT_EXISTS)
-        deleteOrderWithItems(orderId)
-        return createOrder(orderWithItems)
+        internalService.deleteExpiredOrdersInternal(this)
+        internalService.deleteOrderInternal(orderId)
+        return internalService.createOrderInternal(orderWithItems)
     }
 }

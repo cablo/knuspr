@@ -4,7 +4,9 @@ CREATE TABLE public."product"
     "name"     TEXT    NOT NULL,
     "quantity" INTEGER NOT NULL,
     "price"    INTEGER NOT NULL,
-    "deleted"  TIMESTAMP
+    "deleted"  TIMESTAMP,
+    -- TODO index nefunguje
+    UNIQUE (name, deleted)
 );
 
 CREATE TABLE public."order"
@@ -22,7 +24,6 @@ CREATE TABLE public."product_order"
     PRIMARY KEY (product_id, order_id),
     FOREIGN KEY (product_id) REFERENCES "product" (id),
     FOREIGN KEY (order_id) REFERENCES "order" (id),
-
     "quantity" INTEGER NOT NULL
 );
 

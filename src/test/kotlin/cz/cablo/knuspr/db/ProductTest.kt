@@ -3,7 +3,10 @@ package cz.cablo.knuspr.db
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import org.junit.jupiter.api.Test
 import java.time.Instant
-import kotlin.test.*
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 @MicronautTest
 open class ProductTest : ProductOrderServiceAbstractTest() {
@@ -11,9 +14,14 @@ open class ProductTest : ProductOrderServiceAbstractTest() {
     @Test
     fun listAllProducts() {
         val ps = productOrderService.findAllProducts()
+        // check list
         assertEquals(products.size, ps.size)
         assertEquals(products.first().name, ps.first().name)
         assertEquals(products.last().name, ps.last().name)
+        // check returned quantities
+        assertEquals(products[0].quantity, ps[0].quantity)
+        assertEquals(products[3].quantity + 4, ps[3].quantity)
+        assertEquals(products[4].quantity + 5, ps[4].quantity)
     }
 
     @Test

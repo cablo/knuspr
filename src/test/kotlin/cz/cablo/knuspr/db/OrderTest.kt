@@ -54,7 +54,7 @@ open class OrderTest : ProductOrderServiceAbstractTest() {
         val e = assertFailsWith<OrderItemException> {
             productOrderService.createOrder(
                 OrderWithItems(
-                    order = Order(id = null, name = "Order 1", paid = true, created = null), items = listOf(
+                    order = Order(id = null, name = Strings.NEW_ORDER, paid = true, created = null), items = listOf(
                         OrderItem(products[0].id!!, 1), // deleted
                         OrderItem(products[1].id!!, 2), // deleted
                         OrderItem(products[2].id!!, -1), // invalid quantity
@@ -89,7 +89,7 @@ open class OrderTest : ProductOrderServiceAbstractTest() {
 
     @Test
     fun deleteOrderOk() {
-        productOrderService.deleteOrderWithItems(orders[3].id!!)
+        productOrderService.deleteOrder(orders[3].id!!)
         assertEquals(orders.size - 1, orderRepository.findAll().size)
         assertEquals(productOrders.size - 1, productOrderRepository.findAll().size)
     }
@@ -97,7 +97,7 @@ open class OrderTest : ProductOrderServiceAbstractTest() {
     @Test
     fun deleteOrderNotExists() {
         val e = assertFailsWith<Exception> {
-            productOrderService.deleteOrderWithItems(-1)
+            productOrderService.deleteOrder(-1)
         }
         assertEquals(ErrMessages.ORDER_NOT_EXISTS, e.message)
     }
@@ -105,7 +105,7 @@ open class OrderTest : ProductOrderServiceAbstractTest() {
     @Test
     fun deleteOrderPaid() {
         val e = assertFailsWith<Exception> {
-            productOrderService.deleteOrderWithItems(orders.first().id!!)
+            productOrderService.deleteOrder(orders.first().id!!)
         }
         assertEquals(ErrMessages.ORDER_PAID, e.message)
     }
@@ -133,6 +133,54 @@ open class OrderTest : ProductOrderServiceAbstractTest() {
             assertEquals(products[2 + i].id, pi.productId)
             assertEquals((i + 1).toLong(), pi.quantity)
         }
+    }
+
+    @Test
+    fun updateOrderWithoutItems() {
+        val e = assertFailsWith<Exception> {
+            productOrderService.updateOrder(OrderWithItems(order = Order(id = orders[3].id, name = Strings.NEW_ORDER, paid = true, created = null), items = listOf()))
+        }
+        assertEquals(ErrMessages.ORDER_NO_ITEMS, e.message)
+        assertEquals(orders.size, orderRepository.findAll().size)
+        assertEquals(productOrders.size, productOrderRepository.findAll().size)
+    }
+
+    @Test
+    fun updateOrderWithInvalidItems() {
+        val e = assertFailsWith<OrderItemException> {
+            productOrderService.updateOrder(
+                OrderWithItems(
+                    order = Order(id = orders[3].id, name = Strings.NEW_ORDER, paid = true, created = null), items = listOf(
+                        OrderItem(products[0].id!!, 1), // deleted
+                        OrderItem(products[1].id!!, 2), // deleted
+                        OrderItem(products[2].id!!, -1), // invalid quantity
+                        OrderItem(products[3].id!!, 1000), // not enough quantity
+                        OrderItem(-1, 10), // invalid id
+                    )
+                )
+            )
+        }
+        // check no new order and items
+        assertEquals(orders.size, orderRepository.findAll().size)
+        assertEquals(productOrders.size, productOrderRepository.findAll().size)
+        // check returned error order items
+        val errors = e.itemErrors
+        assertEquals(5, errors.size)
+        assertEquals(true, errors[0].missingProduct)
+        assertEquals(null, errors[0].invalidQuantity)
+        assertEquals(null, errors[0].missingQuantity)
+        assertEquals(true, errors[1].missingProduct)
+        assertEquals(null, errors[1].invalidQuantity)
+        assertEquals(null, errors[1].missingQuantity)
+        assertEquals(null, errors[2].missingProduct)
+        assertEquals(true, errors[2].invalidQuantity)
+        assertEquals(null, errors[2].missingQuantity)
+        assertEquals(null, errors[3].missingProduct)
+        assertEquals(null, errors[3].invalidQuantity)
+        assertEquals(900 - productOrders[3].quantity, errors[3].missingQuantity)
+        assertEquals(true, errors[4].missingProduct)
+        assertEquals(null, errors[4].invalidQuantity)
+        assertEquals(null, errors[4].missingQuantity)
     }
 
     @Test
@@ -190,13 +238,22 @@ open class OrderTest : ProductOrderServiceAbstractTest() {
     }
 
     @Test
-    fun updateOrderWithoutItems() {
-        val e = assertFailsWith<Exception> {
-            productOrderService.updateOrder(OrderWithItems(order = Order(id = orders[3].id, name = Strings.NEW_ORDER, paid = true, created = null), items = listOf()))
-        }
-        assertEquals(ErrMessages.ORDER_NO_ITEMS, e.message)
-        assertEquals(orders.size, orderRepository.findAll().size)
-        assertEquals(productOrders.size, productOrderRepository.findAll().size)
+    fun deleteExpiredOrdersInternal() {
+        internalService.deleteExpiredOrdersInternal(productOrderService)
+        assertEquals(orders.size - 2, orderRepository.findAll().size)
+        assertEquals(productOrders.size - 2, productOrderRepository.findAll().size)
     }
 
+    @Test
+    fun deleteExpiredOrdersInternalWithDeletedProduct() {
+        productOrderService.deleteProduct(products[3].id!!)
+        val newProduct = productOrderService.createProduct(Product(id = null, name = products[3].name, quantity = 100, price = 1, deleted = null))
+        internalService.deleteExpiredOrdersInternal(productOrderService)
+        // check row counts
+        assertEquals(products.size + 1, productRepository.findAll().size)
+        assertEquals(orders.size - 2, orderRepository.findAll().size)
+        assertEquals(productOrders.size - 2, productOrderRepository.findAll().size)
+        // check new product quantity is increased
+        assertEquals(products[3].quantity + productOrders[3].quantity, productRepository.findById(newProduct.id).get().quantity)
+    }
 }

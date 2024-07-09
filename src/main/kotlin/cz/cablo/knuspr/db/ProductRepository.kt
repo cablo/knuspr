@@ -13,13 +13,16 @@ interface ProductRepository : CrudRepository<Product, Long> {
     fun findAllOrdered(): List<Product>
 
     @Query("SELECT * FROM product WHERE deleted is null ORDER BY name")
-    fun findAllValid(): List<Product>
+    fun findAllValidOrdered(): List<Product>
 
     @Query("SELECT EXISTS (SELECT 1 FROM product WHERE name = :name AND deleted is null)")
     fun existsValidWithName(name: String): Boolean
 
     @Query("SELECT EXISTS (SELECT 1 FROM product WHERE id <> :currentProductId and name = :name AND deleted is null)")
     fun existsValidWithNameExceptId(name: String, currentProductId: Long): Boolean
+
+    @Query("SELECT EXISTS (SELECT 1 FROM product_order po, \"order\" o WHERE po.product_id=:productId and po.order_id = o.id and o.paid=true)")
+    fun existsPaidOrder(productId: Long): Boolean
 
     @Query("SELECT * FROM product WHERE id = :productId AND deleted is null")
     fun findValidById(productId: Long): Product?
@@ -33,6 +36,4 @@ interface ProductRepository : CrudRepository<Product, Long> {
     @Query("UPDATE product SET quantity = quantity + :quantityDelta WHERE id = :productId")
     fun updateQuantity(productId: Long, quantityDelta: Long)
 
-    @Query("SELECT EXISTS (SELECT 1 FROM product_order po, \"order\" o WHERE po.product_id=:productId and po.order_id = o.id and o.paid=true)")
-    fun paidOrderExists(productId: Long): Boolean
 }
