@@ -9,16 +9,28 @@ datasources:
     db-type: postgres
 
 micronaut:
-  # serve static content from resources/public (copied from react build/ before kotlin build)
+  application:
+    name: knuspr
   router:
     static-resources:
       react:
         paths: classpath:public
         mapping: /public/**
-  # allow to fetch data from react debug fe running on http://localhost:3000
+      swagger:
+        paths: classpath:META-INF/swagger
+        mapping: /swagger/**
+      swagger-ui:
+        paths: classpath:META-INF/swagger/views/swagger-ui
+        mapping: /swagger-ui/**
   server:
     cors:
       enabled: true
       configurations:
         allowedOrigins:
           - "http://localhost:3000"
+
+swagger:
+  enabled: true
+  title: Knuspr
+  version: 1.0
+  description: API documentation for Swagger Demo application

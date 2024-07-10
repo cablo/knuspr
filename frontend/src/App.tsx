@@ -1,5 +1,5 @@
 import React from 'react';
-import {Card, Flex} from "antd";
+import {Button, Card, Flex} from "antd";
 import {OrderTable} from "./tables/OrderTable";
 import {ProductTable} from "./tables/ProductTable";
 
@@ -9,15 +9,15 @@ export function App() {
     return <>
         <Flex vertical align="center" style={{height: '100vh', padding: '0 100px'}}>
             <br/>
+            <Button type="primary" href="/swagger-ui">Go To Swagger</Button>
             <br/>
-            <Card title="Products" size="default" style={{width: '100%'}} hoverable>
+            <Card title="Products" size="default" style={{width: '100%', marginBottom: '30px'}} hoverable>
                 <ProductTable/>
             </Card>
-            <br/>
-            <br/>
             <Card title="Orders" size="default" style={{width: '100%'}} hoverable>
                 <OrderTable/>
             </Card>
+            &nbsp;
         </Flex>
     </>;
 }
