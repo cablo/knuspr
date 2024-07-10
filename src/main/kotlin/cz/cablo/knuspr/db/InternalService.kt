@@ -56,9 +56,8 @@ open class InternalService(
 
     @Transactional(isolation = TransactionDefinition.Isolation.SERIALIZABLE)
     open fun deleteOrderInternal(orderId: Long) {
-        // check order existence
+        // check order existence and paid
         val o = orderRepository.findById(orderId).orElseThrow { Exception(ErrMessages.ORDER_NOT_EXISTS) }
-        // check paid
         if (o.paid) {
             throw Exception(ErrMessages.ORDER_PAID)
         }

@@ -19,6 +19,22 @@ object Strings {
 open class OrderTest : CommonTest() {
 
     @Test
+    fun listAllOrders() {
+        val os = productOrderService.findAllOrders()
+        assertEquals(orders.size, os.size)
+        assertEquals(orders.first().name, os.first().name)
+        assertEquals(orders.last().name, os.last().name)
+    }
+
+    @Test
+    fun listAllUnpaidOrders() {
+        val os = productOrderService.findAllUnpaidOrders()
+        assertEquals(orders.size - 3, os.size)
+        assertEquals(orders[3].name, os.first().name)
+        assertEquals(orders[4].name, os.last().name)
+    }
+
+    @Test
     fun createOrderOk() {
         val o = productOrderService.createOrder(
             OrderWithItems(
@@ -233,6 +249,35 @@ open class OrderTest : CommonTest() {
                     )
                 )
             )
+        }
+        assertEquals(ErrMessages.ORDER_PAID, e.message)
+        assertEquals(orders.size, orderRepository.findAll().size)
+        assertEquals(productOrders.size, productOrderRepository.findAll().size)
+    }
+
+    @Test
+    fun payOrderOk() {
+        val o = productOrderService.payOrder(orders[3].id!!)
+        assertEquals(orders[3].id, o.id)
+        assertEquals(orders[3].name, o.name)
+        assertEquals(true, o.paid)
+        assertEquals(orders[3].created, o.created)
+    }
+
+    @Test
+    fun payOrderNotExists() {
+        val e = assertFailsWith<Exception> {
+            productOrderService.payOrder(-1)
+        }
+        assertEquals(ErrMessages.ORDER_NOT_EXISTS, e.message)
+        assertEquals(orders.size, orderRepository.findAll().size)
+        assertEquals(productOrders.size, productOrderRepository.findAll().size)
+    }
+
+    @Test
+    fun payOrderPaid() {
+        val e = assertFailsWith<Exception> {
+            productOrderService.payOrder(orders[0].id!!)
         }
         assertEquals(ErrMessages.ORDER_PAID, e.message)
         assertEquals(orders.size, orderRepository.findAll().size)

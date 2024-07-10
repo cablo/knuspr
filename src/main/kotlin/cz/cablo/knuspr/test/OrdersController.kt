@@ -5,13 +5,13 @@ import io.micronaut.http.HttpResponse
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
 
-@Controller("/products")
-class ProductsController(private val productOrderService: ProductOrderService) {
+@Controller("/orders")
+class OrdersController(private val productOrderService: ProductOrderService) {
 
-    @Get("/")
+    @Get("/unpaid")
     fun list(): HttpResponse<Any> {
         return try {
-            HttpResponse.ok(productOrderService.findAllValidProducts())
+            HttpResponse.ok(productOrderService.findAllUnpaidOrders())
         } catch (e: Exception) {
             HttpResponse.badRequest(e.message)
         }
@@ -20,7 +20,7 @@ class ProductsController(private val productOrderService: ProductOrderService) {
     @Get("/all")
     fun listAll(): HttpResponse<Any> {
         return try {
-            HttpResponse.ok(productOrderService.findAllProducts())
+            HttpResponse.ok(productOrderService.findAllOrders())
         } catch (e: Exception) {
             HttpResponse.badRequest(e.message)
         }

@@ -5,7 +5,7 @@ import io.micronaut.transaction.annotation.Transactional
 import jakarta.inject.Singleton
 
 object ErrMessages {
-    const val ORDER_PAID = "The order can not be deleted because it has been paid"
+    const val ORDER_PAID = "The order can not be modified because it has been paid"
     const val ORDER_NOT_EXISTS = "The order does not exist"
     const val ORDER_NO_ITEMS = "No items in order"
 
@@ -16,8 +16,7 @@ object ErrMessages {
 
 @Singleton
 open class ProductOrderService(
-    private val productRepository: ProductRepository, private val orderRepository: OrderRepository, private val productOrderRepository: ProductOrderRepository,
-    private val internalService: InternalService
+    private val productRepository: ProductRepository, private val orderRepository: OrderRepository, private val productOrderRepository: ProductOrderRepository, private val internalService: InternalService
 ) {
 
     @Transactional
@@ -68,6 +67,18 @@ open class ProductOrderService(
     }
 
     @Transactional
+    open fun findAllOrders(): List<Order> {
+        internalService.deleteExpiredOrdersInternal(this)
+        return orderRepository.findAllOrdered()
+    }
+
+    @Transactional
+    open fun findAllUnpaidOrders(): List<Order> {
+        internalService.deleteExpiredOrdersInternal(this)
+        return orderRepository.findAllUnpaidOrdered()
+    }
+
+    @Transactional
     @Throws(OrderItemException::class)
     open fun createOrder(orderWithItems: OrderWithItems): Order {
         internalService.deleteExpiredOrdersInternal(this)
@@ -86,5 +97,17 @@ open class ProductOrderService(
         internalService.deleteExpiredOrdersInternal(this)
         internalService.deleteOrderInternal(orderId)
         return internalService.createOrderInternal(orderWithItems)
+    }
+
+    @Transactional
+    open fun payOrder(orderId: Long): Order {
+        // check order existence and paid
+        val o = orderRepository.findById(orderId).orElseThrow { Exception(ErrMessages.ORDER_NOT_EXISTS) }
+        if (o.paid) {
+            throw Exception(ErrMessages.ORDER_PAID)
+        }
+        orderRepository.payOrder(orderId)
+        o.paid = true
+        return o
     }
 }

@@ -26,7 +26,7 @@ class OrderController(private val productOrderService: ProductOrderService) {
     @Get("/delete/{orderId}")
     fun delete(orderId: Long): HttpResponse<Any> {
         return try {
-            HttpResponse.created(productOrderService.deleteOrder(orderId))
+            HttpResponse.ok(productOrderService.deleteOrder(orderId))
         } catch (e: Exception) {
             HttpResponse.badRequest(e.message)
         }
@@ -35,9 +35,18 @@ class OrderController(private val productOrderService: ProductOrderService) {
     @Post("/update")
     fun update(@Body orderWithItems: OrderWithItems): HttpResponse<Any> {
         return try {
-            HttpResponse.created(productOrderService.updateOrder(orderWithItems))
+            HttpResponse.ok(productOrderService.updateOrder(orderWithItems))
         } catch (oie: OrderItemException) {
             HttpResponse.badRequest(oie.itemErrors)
+        } catch (e: Exception) {
+            HttpResponse.badRequest(e.message)
+        }
+    }
+
+    @Get("/pay/{orderId}")
+    fun pay(orderId: Long): HttpResponse<Any> {
+        return try {
+            HttpResponse.ok(productOrderService.payOrder(orderId))
         } catch (e: Exception) {
             HttpResponse.badRequest(e.message)
         }
