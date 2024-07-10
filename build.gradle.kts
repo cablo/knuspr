@@ -1,17 +1,9 @@
 plugins {
-//    id("org.jetbrains.kotlin.jvm") version "1.9.23"
-//    id("org.jetbrains.kotlin.plugin.allopen") version "1.9.23"
-//    id("com.google.devtools.ksp") version "1.9.23-1.0.19"
-//    id("com.github.johnrengelman.shadow") version "8.1.1"
-//    id("io.micronaut.application") version "4.4.0"
-//    id("io.micronaut.aot") version "4.4.0"
-
     id("org.jetbrains.kotlin.jvm") version "1.9.23"
     id("org.jetbrains.kotlin.plugin.allopen") version "1.9.23"
     id("com.google.devtools.ksp") version "1.9.23-1.0.19"
-//    id("com.github.johnrengelman.shadow") version "8.1.1"
-//    id("io.micronaut.application") version "4.4.0"
-    id("io.micronaut.minimal.application") version "4.4.0"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("io.micronaut.application") version "4.4.0"
     id("io.micronaut.aot") version "4.4.0"
 }
 
@@ -24,42 +16,6 @@ repositories {
 }
 
 dependencies {
-//    ksp("io.micronaut.data:micronaut-data-processor")
-//    ksp("io.micronaut:micronaut-http-validation")
-//    ksp("io.micronaut.serde:micronaut-serde-processor")
-//    implementation("io.micronaut.data:micronaut-data-jdbc")
-//    implementation("io.micronaut.kotlin:micronaut-kotlin-runtime")
-//    implementation("io.micronaut.serde:micronaut-serde-jackson")
-//    implementation("io.micronaut.sql:micronaut-jdbc-hikari")
-//    implementation("org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}")
-//    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}")
-//    compileOnly("io.micronaut:micronaut-http-client")
-//    runtimeOnly("ch.qos.logback:logback-classic")
-//    runtimeOnly("com.fasterxml.jackson.module:jackson-module-kotlin")
-//    runtimeOnly("org.postgresql:postgresql")
-
-//    implementation("io.micronaut.data:micronaut-data-hibernate-jpa")
-
-
-//    implementation("io.micronaut:micronaut-inject")
-//
-//    testImplementation("io.micronaut.test:micronaut-test-junit5")
-//    testImplementation("org.jetbrains.kotlin:kotlin-test")
-//    testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
-//    testImplementation("org.junit.jupiter:junit-jupiter-api")
-//    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
-
-
-//    testImplementation("io.micronaut:micronaut-http-client")
-//    testImplementation("io.micronaut.test:micronaut-test-junit5")
-//    testImplementation("org.jetbrains.kotlin:kotlin-test")
-//    testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
-//    testImplementation("org.junit.jupiter:junit-jupiter-api")
-//    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
-
-    testImplementation("io.micronaut:micronaut-http-client")
-    testImplementation("org.jetbrains.kotlin:kotlin-test")
-
     ksp("io.micronaut.data:micronaut-data-processor")
     ksp("io.micronaut:micronaut-http-validation")
     ksp("io.micronaut.serde:micronaut-serde-processor")
@@ -69,25 +25,19 @@ dependencies {
     implementation("io.micronaut.sql:micronaut-jdbc-hikari")
     implementation("org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.0")
     compileOnly("io.micronaut:micronaut-http-client")
     runtimeOnly("ch.qos.logback:logback-classic")
     runtimeOnly("com.fasterxml.jackson.module:jackson-module-kotlin")
     runtimeOnly("org.postgresql:postgresql")
     runtimeOnly("org.yaml:snakeyaml")
-
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.0")
-
-
-    // tests
-//    testImplementation("io.micronaut.test:micronaut-test-junit5")
-//    testImplementation("org.junit.jupiter:junit-jupiter-api")
-//    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
-//    testImplementation("io.micronaut:micronaut-http-client")
+    testImplementation("io.micronaut:micronaut-http-client")
+    testImplementation("org.jetbrains.kotlin:kotlin-test")
 }
 
 
 application {
-    mainClass = "com.example.ApplicationKt"
+    mainClass = "cz.cablo.knuspr.ApplicationKt"
 }
 java {
     sourceCompatibility = JavaVersion.toVersion("21")

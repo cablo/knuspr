@@ -1,6 +1,6 @@
 #!/bin/bash
 
-./q.sh
+#./q.sh
 docker compose up --build
 docker ps
 docker images
