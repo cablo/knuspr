@@ -47,7 +47,7 @@ Micronaut Data, Kotlin, Postgres, Docker, Kubernetes
 
 5. To test docker app, run docker and go to `http://localhost:8000/products`
 
-7. TODO To debug FE, run step 3 and then run `npm run start` in dir `fe` in IDE. It connects to previous docker-compose knuspr app for data.
+7. To debug FE, run step 3 and then run `npm run start` in dir `frontend` in IDE. It connects to previous docker-compose knuspr app for data.
 
 8. To run in k8s, clean docker with `./dp.sh` and run `./ss.sh` to create local docker images `cablo/knuspr-postgres-image` and `cablo/knuspr-app-image`. Then switch to dir `k8s` and run
 
