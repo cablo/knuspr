@@ -63,7 +63,7 @@ open class InternalService(
         }
         // return items quantities to products:
         // each product item must return its quantity to the product, but referenced product can be deleted, so:
-        // a) Try to find valid product by name and if founded -> return quantity to it; else
+        // a) Try to find valid product by name and if founded -> return quantity there; else
         // b) Return quantity to the referenced product
         val items = productOrderRepository.findOrderItems(orderId)
         for (oi in items) {
