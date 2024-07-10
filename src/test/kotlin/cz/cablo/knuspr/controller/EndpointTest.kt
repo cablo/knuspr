@@ -1,8 +1,10 @@
 package cz.cablo.knuspr.controller
 
+import com.fasterxml.jackson.core.type.TypeReference
 import cz.cablo.knuspr.bean.OrderItem
 import cz.cablo.knuspr.bean.OrderWithItems
 import cz.cablo.knuspr.db.*
+import io.micronaut.core.type.GenericArgument
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.client.HttpClient
 import io.micronaut.http.client.annotation.Client
@@ -12,6 +14,8 @@ import jakarta.inject.Inject
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.Instant
+import kotlin.test.*
+
 
 @MicronautTest(transactional = false)
 class EndpointTest {
@@ -19,6 +23,9 @@ class EndpointTest {
     @Inject
     @Client("/")
     lateinit var client: HttpClient
+
+    @Inject
+    lateinit var productOrderService: ProductOrderService
 
     @Inject
     lateinit var productOrderRepository: ProductOrderRepository
@@ -37,10 +44,82 @@ class EndpointTest {
     }
 
     @Test
-    fun testEverything() {
-        // TODO cablo
-        println()
+    fun listAllProducts() {
+        val body = client.toBlocking().exchange("/products", String::class.java).body()
+        assertTrue(body.startsWith("[{\"id\":"))
     }
+
+    @Test
+    fun deleteAllProducts() {
+        for (p in products) {
+            val dp = objectMapper.readValue(client.toBlocking().exchange("/product/delete/" + p.id, String::class.java).body(), Product::class.java)
+            assertEquals(p.id, dp.id)
+            assertNotNull(dp.deleted)
+        }
+        assertEquals(10, productOrderService.findAllProducts().size)
+        assertEquals(0, productOrderService.findAllValidProducts().size)
+    }
+
+    @Test
+    fun updateAllProducts() {
+        for ((i, p) in products.withIndex()) {
+            val up = objectMapper.readValue(
+                client.toBlocking().exchange(HttpRequest.POST("/product/update", Product(id = p.id, name = "New Knuspr $i", quantity = 1, price = 10, deleted = Instant.now())), String::class.java).body(), Product::class.java
+            )
+            assertEquals(p.id, up.id)
+            assertEquals("New Knuspr $i", up.name)
+            assertEquals(1, up.quantity)
+            assertEquals(10, up.price)
+            assertNull(up.deleted)
+        }
+    }
+
+    @Test
+    fun listAllOrders() {
+        val body = client.toBlocking().exchange("/orders", String::class.java).body()
+        assertTrue(body.startsWith("[{\"id\":"))
+    }
+
+    @Test
+    fun deleteAllOrders() {
+        for (o in orders) {
+            client.toBlocking().exchange("/order/delete/" + o.id, String::class.java)
+        }
+        assertEquals(0, productOrderService.findAllOrders().size)
+    }
+
+    @Test
+    fun updateAllOrders() {
+        assertEquals(15, productOrderRepository.findAll().size)
+        for ((i, o) in orders.withIndex()) {
+            val uo = objectMapper.readValue(
+                client.toBlocking().exchange(
+                    HttpRequest.POST(
+                        "/order/update", OrderWithItems(
+                            order = Order(id = o.id, name = "New Order $i", paid = true, created = null), items = listOf(
+                                OrderItem(products[0].id!!, 1)
+                            )
+                        )
+                    ), String::class.java
+                ).body(), Order::class.java
+            )
+            assertNotEquals(o.id, uo.id)
+            assertEquals("New Order $i", uo.name)
+            assertEquals(false, uo.paid)
+            assertNotNull(uo.created)
+        }
+        assertEquals(5, productOrderRepository.findAll().size)
+    }
+
+    @Test
+    fun payAllOrders() {
+        for (o in orders) {
+            val po = objectMapper.readValue(client.toBlocking().exchange("/order/pay/" + o.id, String::class.java).body(), Order::class.java)
+            assertEquals(o.id, po.id)
+            assertTrue(po.paid)
+        }
+    }
+
 
     private fun createData() {
         productOrderRepository.deleteDatabase()
@@ -55,7 +134,6 @@ class EndpointTest {
                 )
             )
         }
-
         for (i in 0..4) {
             orders.add(
                 objectMapper.readValue(
@@ -73,7 +151,6 @@ class EndpointTest {
                 )
             )
         }
-
-
+        productOrders.addAll(productOrderRepository.findAll())
     }
 }

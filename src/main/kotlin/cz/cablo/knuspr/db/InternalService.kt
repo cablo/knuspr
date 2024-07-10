@@ -16,7 +16,7 @@ open class InternalService(
     @Throws(OrderItemException::class)
     open fun createOrderInternal(orderWithItems: OrderWithItems): Order {
         // check empty items
-        if (orderWithItems.items.isEmpty()) {
+        if (orderWithItems.items == null || orderWithItems.items!!.isEmpty()) {
             throw Exception(ErrMessages.ORDER_NO_ITEMS)
         }
         // save order row
@@ -26,7 +26,7 @@ open class InternalService(
         val dbOrder = orderRepository.save(order)
         // save all order items
         val itemErrors: MutableList<OrderItemError> = mutableListOf()
-        for (oi in orderWithItems.items) {
+        for (oi in orderWithItems.items!!) {
             // check quantity > 0
             if (oi.quantity <= 0) {
                 itemErrors.add(OrderItemError(productId = oi.productId, missingProduct = null, invalidQuantity = true, missingQuantity = null))

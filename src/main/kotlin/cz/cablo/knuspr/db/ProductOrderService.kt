@@ -42,9 +42,9 @@ open class ProductOrderService(
     }
 
     open fun deleteProduct(productId: Long): Product {
-        val p = productRepository.findValidById(productId) ?: throw Exception(ErrMessages.PRODUCT_NOT_EXISTS)
+        productRepository.findValidById(productId) ?: throw Exception(ErrMessages.PRODUCT_NOT_EXISTS)
         productRepository.softDelete(productId)
-        return p
+        return productRepository.findById(productId).get()
     }
 
     @Transactional

@@ -26,7 +26,8 @@ class OrderController(private val productOrderService: ProductOrderService) {
     @Get("/delete/{orderId}")
     fun delete(orderId: Long): HttpResponse<Any> {
         return try {
-            HttpResponse.ok(productOrderService.deleteOrder(orderId))
+            productOrderService.deleteOrder(orderId)
+            HttpResponse.ok()
         } catch (e: Exception) {
             HttpResponse.badRequest(e.message)
         }
