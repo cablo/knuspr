@@ -13,6 +13,7 @@ open class InternalService(
 ) {
 
     @Transactional(isolation = TransactionDefinition.Isolation.SERIALIZABLE)
+    @Throws(OrderItemException::class)
     open fun createOrderInternal(orderWithItems: OrderWithItems): Order {
         // check empty items
         if (orderWithItems.items.isEmpty()) {
@@ -44,7 +45,7 @@ open class InternalService(
                 continue
             }
             productRepository.updateQuantity(product.id!!, -(oi.quantity))
-            productOrderRepository.save(ProductOrder(productId = oi.productId, orderId = dbOrder.id!!, quantity = oi.quantity))
+            productOrderRepository.save(ProductOrder(id = ProductOrderId(productId = oi.productId, orderId = dbOrder.id!!), quantity = oi.quantity))
         }
         // if order item error -> exception
         if (itemErrors.isNotEmpty()) {
@@ -68,9 +69,9 @@ open class InternalService(
         val items = productOrderRepository.findOrderItems(orderId)
         for (oi in items) {
             // try to find valid product; else use current product
-            var targetProductId = productRepository.findValidProductIdForProduct(oi.productId)
+            var targetProductId = productRepository.findValidProductIdForProduct(oi.id.productId)
             if (targetProductId == null) {
-                targetProductId = oi.productId
+                targetProductId = oi.id.productId
             }
             productRepository.updateQuantity(targetProductId, oi.quantity)
         }

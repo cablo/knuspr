@@ -4,11 +4,10 @@ import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import org.junit.jupiter.api.BeforeEach
 import java.time.Instant
-import java.time.temporal.ChronoUnit
 import kotlin.test.assertEquals
 
 @MicronautTest(transactional = false)
-open class ProductOrderServiceAbstractTest {
+open class CommonTest {
 
     @Inject
     lateinit var productRepository: ProductRepository
@@ -46,11 +45,11 @@ open class ProductOrderServiceAbstractTest {
         }
         for (i in 0..4) {
             orders.add(
-                orderRepository.save(Order(id = null, name = "Order $i", paid = (i <= 2), created = Instant.now().minus(1, ChronoUnit.HOURS)))
+                orderRepository.save(Order(id = null, name = "Order $i", paid = (i <= 2), created = null))
             )
         }
         for (i in 0..4) {
-            productOrders.add(productOrderRepository.save(ProductOrder(productId = products[i].id!!, orderId = orders[i].id!!, quantity = (i + 1).toLong())))
+            productOrders.add(productOrderRepository.save(ProductOrder(id = ProductOrderId(productId = products[i].id!!, orderId = orders[i].id!!), quantity = (i + 1).toLong())))
         }
         assertEquals(10, productRepository.findAll().size)
         assertEquals(5, orderRepository.findAll().size)

@@ -4,6 +4,8 @@ import cz.cablo.knuspr.bean.OrderItem
 import cz.cablo.knuspr.bean.OrderWithItems
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import org.junit.jupiter.api.Test
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
@@ -14,7 +16,7 @@ object Strings {
 }
 
 @MicronautTest(transactional = false)
-open class OrderTest : ProductOrderServiceAbstractTest() {
+open class OrderTest : CommonTest() {
 
     @Test
     fun createOrderOk() {
@@ -35,8 +37,8 @@ open class OrderTest : ProductOrderServiceAbstractTest() {
         val items = productOrderRepository.findOrderItems(o.id!!)
         assertEquals(3, items.size)
         for ((i, pi) in items.withIndex()) {
-            assertEquals(o.id, pi.orderId)
-            assertEquals(products[2 + i].id, pi.productId)
+            assertEquals(o.id, pi.id.orderId)
+            assertEquals(products[2 + i].id, pi.id.productId)
             assertEquals((i + 1).toLong(), pi.quantity)
         }
     }
@@ -129,8 +131,8 @@ open class OrderTest : ProductOrderServiceAbstractTest() {
         val items = productOrderRepository.findOrderItems(o.id!!)
         assertEquals(3, items.size)
         for ((i, pi) in items.withIndex()) {
-            assertEquals(o.id, pi.orderId)
-            assertEquals(products[2 + i].id, pi.productId)
+            assertEquals(o.id, pi.id.orderId)
+            assertEquals(products[2 + i].id, pi.id.productId)
             assertEquals((i + 1).toLong(), pi.quantity)
         }
     }
@@ -239,13 +241,20 @@ open class OrderTest : ProductOrderServiceAbstractTest() {
 
     @Test
     fun deleteExpiredOrdersInternal() {
+        expireAllOrdersInternal()
+        // prune them
         internalService.deleteExpiredOrdersInternal(productOrderService)
         assertEquals(orders.size - 2, orderRepository.findAll().size)
         assertEquals(productOrders.size - 2, productOrderRepository.findAll().size)
+        // check returned quantities
+        assertEquals(products[0].quantity, productRepository.findById(products[0].id).get().quantity)
+        assertEquals(products[3].quantity + productOrders[3].quantity, productRepository.findById(products[3].id).get().quantity)
+        assertEquals(products[4].quantity + productOrders[4].quantity, productRepository.findById(products[4].id).get().quantity)
     }
 
     @Test
-    fun deleteExpiredOrdersInternalWithDeletedProduct() {
+    fun deleteExpiredOrdersInternalAndReturnQuantityToValidProduct() {
+        expireAllOrdersInternal()
         productOrderService.deleteProduct(products[3].id!!)
         val newProduct = productOrderService.createProduct(Product(id = null, name = products[3].name, quantity = 100, price = 1, deleted = null))
         internalService.deleteExpiredOrdersInternal(productOrderService)
@@ -255,5 +264,13 @@ open class OrderTest : ProductOrderServiceAbstractTest() {
         assertEquals(productOrders.size - 2, productOrderRepository.findAll().size)
         // check new product quantity is increased
         assertEquals(products[3].quantity + productOrders[3].quantity, productRepository.findById(newProduct.id).get().quantity)
+    }
+
+    private fun expireAllOrdersInternal() {
+        // set all orders expired (including paid)
+        for (o in orderRepository.findAll()) {
+            o.created = Instant.now().minus(1, ChronoUnit.HOURS)
+            orderRepository.update(o)
+        }
     }
 }

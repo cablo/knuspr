@@ -59,21 +59,13 @@ open class AbstractDbTest {
         }
         for (i in 1..5) {
             productOrders.add(
-                productOrderRepository.save(
-                    ProductOrder(
-                        productId = products[i].id!!, orderId = orders[i].id!!, quantity = i.toLong()
-                    )
-                )
+                productOrderRepository.save(ProductOrder(id = ProductOrderId(productId = products[i].id!!, orderId = orders[i].id!!), quantity = i.toLong()))
             )
         }
 
         // fail duplicated
         assertFailsWith<Exception> {
-            productOrderService.createProduct(
-                Product(
-                    id = null, name = "Knuspr 1", quantity = 100, price = 1, deleted = null
-                )
-            )
+            productOrderService.createProduct(Product(id = null, name = "Knuspr 1", quantity = 100, price = 1, deleted = null))
         }
 
         // delete Knuspr 1 and create again

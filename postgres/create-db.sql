@@ -19,11 +19,11 @@ CREATE TABLE public."order"
 
 CREATE TABLE public."product_order"
 (
-    product_id INTEGER NOT NULL,
-    order_id   INTEGER NOT NULL,
-    PRIMARY KEY (product_id, order_id),
-    FOREIGN KEY (product_id) REFERENCES "product" (id),
-    FOREIGN KEY (order_id) REFERENCES "order" (id),
+    id_product_id INTEGER NOT NULL,
+    id_order_id   INTEGER NOT NULL,
+    PRIMARY KEY (id_product_id, id_order_id),
+    FOREIGN KEY (id_product_id) REFERENCES "product" (id),
+    FOREIGN KEY (id_order_id) REFERENCES "order" (id),
     "quantity" INTEGER NOT NULL
 );
 

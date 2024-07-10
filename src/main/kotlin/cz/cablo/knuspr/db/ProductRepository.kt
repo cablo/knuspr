@@ -21,7 +21,7 @@ interface ProductRepository : CrudRepository<Product, Long> {
     @Query("SELECT EXISTS (SELECT 1 FROM product WHERE id <> :currentProductId and name = :name AND deleted is null)")
     fun existsValidWithNameExceptId(name: String, currentProductId: Long): Boolean
 
-    @Query("SELECT EXISTS (SELECT 1 FROM product_order po, \"order\" o WHERE po.product_id=:productId and po.order_id = o.id and o.paid=true)")
+    @Query("SELECT EXISTS (SELECT 1 FROM product_order po, \"order\" o WHERE po.id_product_id=:productId and po.id_order_id = o.id and o.paid=true)")
     fun existsPaidOrder(productId: Long): Boolean
 
     @Query("SELECT * FROM product WHERE id = :productId AND deleted is null")

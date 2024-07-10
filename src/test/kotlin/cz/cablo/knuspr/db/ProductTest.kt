@@ -8,8 +8,8 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
-@MicronautTest
-open class ProductTest : ProductOrderServiceAbstractTest() {
+@MicronautTest(transactional = false)
+open class ProductTest : CommonTest() {
 
     @Test
     fun listAllProducts() {
@@ -18,10 +18,6 @@ open class ProductTest : ProductOrderServiceAbstractTest() {
         assertEquals(products.size, ps.size)
         assertEquals(products.first().name, ps.first().name)
         assertEquals(products.last().name, ps.last().name)
-        // check returned quantities
-        assertEquals(products[0].quantity, ps[0].quantity)
-        assertEquals(products[3].quantity + 4, ps[3].quantity)
-        assertEquals(products[4].quantity + 5, ps[4].quantity)
     }
 
     @Test

@@ -31,4 +31,15 @@ class OrderController(private val productOrderService: ProductOrderService) {
             HttpResponse.badRequest(e.message)
         }
     }
+
+    @Post("/update")
+    fun update(@Body orderWithItems: OrderWithItems): HttpResponse<Any> {
+        return try {
+            HttpResponse.created(productOrderService.updateOrder(orderWithItems))
+        } catch (oie: OrderItemException) {
+            HttpResponse.badRequest(oie.itemErrors)
+        } catch (e: Exception) {
+            HttpResponse.badRequest(e.message)
+        }
+    }
 }

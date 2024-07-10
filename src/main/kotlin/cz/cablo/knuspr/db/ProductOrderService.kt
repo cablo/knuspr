@@ -68,6 +68,7 @@ open class ProductOrderService(
     }
 
     @Transactional
+    @Throws(OrderItemException::class)
     open fun createOrder(orderWithItems: OrderWithItems): Order {
         internalService.deleteExpiredOrdersInternal(this)
         return internalService.createOrderInternal(orderWithItems)
@@ -79,6 +80,7 @@ open class ProductOrderService(
     }
 
     @Transactional
+    @Throws(OrderItemException::class)
     open fun updateOrder(orderWithItems: OrderWithItems): Order {
         val orderId = orderWithItems.order.id ?: throw Exception(ErrMessages.ORDER_NOT_EXISTS)
         internalService.deleteExpiredOrdersInternal(this)
