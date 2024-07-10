@@ -1,4 +1,4 @@
-package cz.cablo.knuspr.test
+package cz.cablo.knuspr.controller
 
 import cz.cablo.knuspr.db.Product
 import cz.cablo.knuspr.db.ProductOrderService

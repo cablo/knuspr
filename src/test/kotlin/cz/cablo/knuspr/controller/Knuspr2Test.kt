@@ -1,8 +1,5 @@
-package cz.cablo.knuspr.test
+package cz.cablo.knuspr.controller
 
-import cz.cablo.knuspr.bean.OrderItem
-import cz.cablo.knuspr.bean.OrderWithItems
-import cz.cablo.knuspr.db.Order
 import cz.cablo.knuspr.db.Product
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
