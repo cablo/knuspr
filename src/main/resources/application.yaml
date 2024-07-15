@@ -34,3 +34,8 @@ swagger:
   title: Knuspr
   version: 1.0
   description: API documentation for Swagger Demo application
+
+flyway:
+  datasources:
+    default:
+      enabled: true

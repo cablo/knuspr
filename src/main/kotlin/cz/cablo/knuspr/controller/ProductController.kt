@@ -5,7 +5,7 @@ import cz.cablo.knuspr.db.ProductOrderService
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
-import io.micronaut.http.annotation.Get
+import io.micronaut.http.annotation.Delete
 import io.micronaut.http.annotation.Post
 
 @Controller("/product")
@@ -16,7 +16,7 @@ class ProductController(private val productOrderService: ProductOrderService) {
         return HttpResponse.created(productOrderService.createProduct(product))
     }
 
-    @Get("/delete/{productId}")
+    @Delete("/delete/{productId}")
     fun delete(productId: Long): HttpResponse<*> {
         return HttpResponse.ok(productOrderService.deleteProduct(productId))
     }
