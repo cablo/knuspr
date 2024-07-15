@@ -9,20 +9,12 @@ import io.micronaut.http.annotation.Get
 class ProductsController(private val productOrderService: ProductOrderService) {
 
     @Get("/")
-    fun list(): HttpResponse<Any> {
-        return try {
-            HttpResponse.ok(productOrderService.findAllValidProducts())
-        } catch (e: Exception) {
-            HttpResponse.badRequest(e.message)
-        }
+    fun list(): HttpResponse<*> {
+        return HttpResponse.ok(productOrderService.findAllValidProducts())
     }
 
     @Get("/all")
-    fun listAll(): HttpResponse<Any> {
-        return try {
-            HttpResponse.ok(productOrderService.findAllProducts())
-        } catch (e: Exception) {
-            HttpResponse.badRequest(e.message)
-        }
+    fun listAll(): HttpResponse<*> {
+        return HttpResponse.ok(productOrderService.findAllProducts())
     }
 }

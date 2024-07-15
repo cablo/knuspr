@@ -1,5 +1,6 @@
 package cz.cablo.knuspr.db
 
+import cz.cablo.knuspr.db.ProductStrings.NEW_KNUSPR
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import org.junit.jupiter.api.Test
 import java.time.Instant
@@ -7,6 +8,10 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+
+object ProductStrings {
+    const val NEW_KNUSPR = "New Knuspr"
+}
 
 @MicronautTest(transactional = false)
 open class ProductTest : CommonTest() {
@@ -72,9 +77,9 @@ open class ProductTest : CommonTest() {
 
     @Test
     fun updateProductOk() {
-        val p = productOrderService.updateProduct(Product(id = products[5].id, name = "New Knuspr", quantity = 10, price = 2, deleted = Instant.now()))
+        val p = productOrderService.updateProduct(Product(id = products[5].id, name = NEW_KNUSPR, quantity = 10, price = 2, deleted = Instant.now()))
         assertEquals(products[5].id, p.id)
-        assertEquals("New Knuspr", p.name)
+        assertEquals(NEW_KNUSPR, p.name)
         assertEquals(10, p.quantity)
         assertEquals(2, p.price)
         assertNull(p.deleted)
@@ -84,12 +89,12 @@ open class ProductTest : CommonTest() {
     fun updateProductNotExists() {
         // unknown id
         var e = assertFailsWith<Exception> {
-            productOrderService.updateProduct(Product(id = -1, name = "New Knuspr", quantity = 10, price = 2, deleted = Instant.now()))
+            productOrderService.updateProduct(Product(id = -1, name = NEW_KNUSPR, quantity = 10, price = 2, deleted = Instant.now()))
         }
         assertEquals(ErrMessages.PRODUCT_NOT_EXISTS, e.message)
         // already deleted
         e = assertFailsWith<Exception> {
-            productOrderService.updateProduct(Product(id = products[0].id, name = "New Knuspr", quantity = 10, price = 2, deleted = Instant.now()))
+            productOrderService.updateProduct(Product(id = products[0].id, name = NEW_KNUSPR, quantity = 10, price = 2, deleted = Instant.now()))
         }
         assertEquals(ErrMessages.PRODUCT_NOT_EXISTS, e.message)
     }
@@ -97,7 +102,7 @@ open class ProductTest : CommonTest() {
     @Test
     fun updateProductPaidOrder() {
         val e = assertFailsWith<Exception> {
-            productOrderService.updateProduct(Product(id = products[2].id, name = "New Knuspr", quantity = 10, price = 2, deleted = Instant.now()))
+            productOrderService.updateProduct(Product(id = products[2].id, name = NEW_KNUSPR, quantity = 10, price = 2, deleted = Instant.now()))
         }
         assertEquals(ErrMessages.PRODUCT_HAS_PAID_ORDER, e.message)
     }

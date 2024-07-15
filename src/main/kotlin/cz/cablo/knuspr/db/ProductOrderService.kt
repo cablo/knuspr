@@ -16,7 +16,7 @@ object ErrMessages {
 
 @Singleton
 open class ProductOrderService(
-    private val productRepository: ProductRepository, private val orderRepository: OrderRepository, private val productOrderRepository: ProductOrderRepository, private val internalService: InternalService
+    private val productRepository: ProductRepository, private val orderRepository: OrderRepository, private val internalService: InternalService
 ) {
 
     @Transactional

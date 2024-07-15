@@ -1,10 +1,9 @@
 package cz.cablo.knuspr.controller
 
-import com.fasterxml.jackson.core.type.TypeReference
 import cz.cablo.knuspr.bean.OrderItem
 import cz.cablo.knuspr.bean.OrderWithItems
 import cz.cablo.knuspr.db.*
-import io.micronaut.core.type.GenericArgument
+import cz.cablo.knuspr.db.ProductStrings.NEW_KNUSPR
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.client.HttpClient
 import io.micronaut.http.client.annotation.Client
@@ -64,10 +63,10 @@ class EndpointTest {
     fun updateAllProducts() {
         for ((i, p) in products.withIndex()) {
             val up = objectMapper.readValue(
-                client.toBlocking().exchange(HttpRequest.POST("/product/update", Product(id = p.id, name = "New Knuspr $i", quantity = 1, price = 10, deleted = Instant.now())), String::class.java).body(), Product::class.java
+                client.toBlocking().exchange(HttpRequest.POST("/product/update", Product(id = p.id, name = "$NEW_KNUSPR $i", quantity = 1, price = 10, deleted = Instant.now())), String::class.java).body(), Product::class.java
             )
             assertEquals(p.id, up.id)
-            assertEquals("New Knuspr $i", up.name)
+            assertEquals("$NEW_KNUSPR $i", up.name)
             assertEquals(1, up.quantity)
             assertEquals(10, up.price)
             assertNull(up.deleted)
