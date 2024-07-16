@@ -51,7 +51,7 @@ class EndpointTest {
     @Test
     fun deleteAllProducts() {
         for (p in products) {
-            val dp = objectMapper.readValue(client.toBlocking().exchange("/product/delete/" + p.id, String::class.java).body(), Product::class.java)
+            val dp = objectMapper.readValue(client.toBlocking().exchange<Any, String>(HttpRequest.DELETE("/product/delete/${p.id}"), String::class.java).body(), Product::class.java)
             assertEquals(p.id, dp.id)
             assertNotNull(dp.deleted)
         }
@@ -82,7 +82,7 @@ class EndpointTest {
     @Test
     fun deleteAllOrders() {
         for (o in orders) {
-            client.toBlocking().exchange("/order/delete/" + o.id, String::class.java)
+            client.toBlocking().exchange<Any, Any>(HttpRequest.DELETE("/order/delete/${o.id}"))
         }
         assertEquals(0, productOrderService.findAllOrders().size)
     }
@@ -113,7 +113,7 @@ class EndpointTest {
     @Test
     fun payAllOrders() {
         for (o in orders) {
-            val po = objectMapper.readValue(client.toBlocking().exchange("/order/pay/" + o.id, String::class.java).body(), Order::class.java)
+            val po = objectMapper.readValue(client.toBlocking().exchange("/order/pay/${o.id}", String::class.java).body(), Order::class.java)
             assertEquals(o.id, po.id)
             assertTrue(po.paid)
         }
