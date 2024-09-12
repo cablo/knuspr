@@ -8,8 +8,10 @@ import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Delete
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
+import io.swagger.v3.oas.annotations.tags.Tag
 
 @Controller("/order")
+@Tag(name = "Orders")
 class OrderController(private val productOrderService: ProductOrderService) {
 
     @Post("/create")

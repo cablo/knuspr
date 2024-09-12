@@ -4,8 +4,10 @@ import cz.cablo.knuspr.db.ProductOrderService
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
+import io.swagger.v3.oas.annotations.tags.Tag
 
 @Controller("/orders")
+@Tag(name = "Orders")
 class OrdersController(private val productOrderService: ProductOrderService) {
 
     @Get("/")

@@ -2,8 +2,11 @@ import React from 'react';
 import {Button, Card, Flex} from "antd";
 import {OrderTable} from "./tables/OrderTable";
 import {ProductTable} from "./tables/ProductTable";
+import {Configuration, OrdersApi, ProductsApi} from "./client-gen";
 
-export const FETCH_BASE_URL = process.env.REACT_APP_FETCH_BASE_URL ?? '';
+export const CONFIG = new Configuration({basePath: process.env.REACT_APP_FETCH_BASE_URL ?? ''});
+export const PRODUCTS_API = new ProductsApi(CONFIG);
+export const ORDERS_API = new OrdersApi(CONFIG);
 
 export function App() {
     return <>

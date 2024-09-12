@@ -29,12 +29,6 @@ micronaut:
         allowedOrigins:
           - "http://localhost:3000"
 
-swagger:
-  enabled: true
-  title: Knuspr
-  version: 1.0
-  description: API documentation for Swagger Demo application
-
 flyway:
   datasources:
     default:

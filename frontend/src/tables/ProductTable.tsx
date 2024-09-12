@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {Table} from "antd";
-import {FETCH_BASE_URL} from "../App";
+import {PRODUCTS_API} from "../App";
 
 export function ProductTable() {
     const [data, setData] = useState<any>([]);
@@ -8,8 +8,7 @@ export function ProductTable() {
     useEffect(() => {
         (async () => {
             try {
-                const response = await fetch(`${FETCH_BASE_URL}/products/all`);
-                setData(await response.json());
+                setData(await PRODUCTS_API.listAll1());
             } catch (e) {
                 console.error(e);
             }
