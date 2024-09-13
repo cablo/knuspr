@@ -1,3 +1,7 @@
+rem Generate db from .dbml
+rem npm install -g @dbml/cli
+call dbml2sql ./db/model.dbml -o ./src/main/resources/db/migration/V1__create.sql
+
 rem Rebuild server
 call gradlew clean build -x test
 

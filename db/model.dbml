@@ -1,0 +1,23 @@
+Table product {
+  id int [pk, increment]
+  name varchar [not null]
+  quantity int [not null]
+  price int [not null]
+  deleted timestamp
+}
+
+Table order {
+  id int [pk, increment]
+  name varchar [not null]
+  paid bool [not null, default: false]
+  created timestamp [default: 'now()']
+}
+
+Table product_order {
+  id_product_id int [ref: > product.id]
+  id_order_id int [ref: > order.id]
+  quantity int [not null]
+  indexes {
+    (id_product_id, id_order_id) [pk]
+  }
+}
